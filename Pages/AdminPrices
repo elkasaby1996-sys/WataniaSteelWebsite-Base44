@@ -1,0 +1,481 @@
+import React, { useState } from 'react';
+import { base44 } from '@/api/base44Client';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { motion } from 'framer-motion';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { 
+  DollarSign, 
+  Edit, 
+  Save, 
+  X, 
+  Shield,
+  Search,
+  Filter,
+  ShoppingBag,
+  Package,
+  Upload,
+  Image as ImageIcon,
+  Lock
+} from 'lucide-react';
+import { toast } from 'sonner';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+
+export default function AdminPrices() {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [password, setPassword] = useState('');
+  const [activeTab, setActiveTab] = useState('products');
+  const [editingId, setEditingId] = useState(null);
+  const [editForm, setEditForm] = useState({});
+  const [filterCategory, setFilterCategory] = useState('all');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [orderFilter, setOrderFilter] = useState('all');
+  const queryClient = useQueryClient();
+
+  const { data: products = [], isLoading } = useQuery({
+    queryKey: ['products'],
+    queryFn: () => base44.entities.Product.list(),
+    enabled: isAuthenticated,
+  });
+
+  const { data: orders = [], isLoading: ordersLoading } = useQuery({
+    queryKey: ['orders'],
+    queryFn: () => base44.entities.Order.list('-created_date'),
+    enabled: isAuthenticated,
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: ({ id, data }) => base44.entities.Product.update(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['products'] });
+      setEditingId(null);
+      setEditForm({});
+      toast.success('Price updated successfully!');
+    },
+    onError: () => {
+      toast.error('Failed to update price');
+    }
+  });
+
+  const [uploadingImage, setUploadingImage] = useState(false);
+
+  const startEdit = (product) => {
+    setEditingId(product.id);
+    setEditForm({
+      price_per_ton: product.price_per_ton || '',
+      price_per_piece: product.price_per_piece || '',
+      lead_time: product.lead_time || '',
+      in_stock: product.in_stock !== false,
+      image_url: product.image_url || ''
+    });
+  };
+
+  const handleImageUpload = async (file, productId) => {
+    setUploadingImage(true);
+    try {
+      const result = await base44.integrations.Core.UploadFile({ file });
+      setEditForm({ ...editForm, image_url: result.file_url });
+      toast.success('Image uploaded successfully!');
+    } catch (error) {
+      toast.error('Failed to upload image');
+    } finally {
+      setUploadingImage(false);
+    }
+  };
+
+  const cancelEdit = () => {
+    setEditingId(null);
+    setEditForm({});
+  };
+
+  const saveEdit = (productId) => {
+    updateMutation.mutate({
+      id: productId,
+      data: {
+        ...editForm,
+        price_per_ton: editForm.price_per_ton ? parseFloat(editForm.price_per_ton) : null,
+        price_per_piece: editForm.price_per_piece ? parseFloat(editForm.price_per_piece) : null,
+      }
+    });
+  };
+
+  const filteredProducts = products.filter(product => {
+    const matchesCategory = filterCategory === 'all' || product.category === filterCategory;
+    const matchesSearch = product.name?.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchesCategory && matchesSearch;
+  });
+
+  const filteredOrders = orders.filter(order => {
+    if (orderFilter === 'all') return true;
+    return order.status === orderFilter;
+  });
+
+  const handleLogin = (e) => {
+    e.preventDefault();
+    if (password === 'wataniasteel2025') {
+      setIsAuthenticated(true);
+      toast.success('Access granted');
+    } else {
+      toast.error('Incorrect password');
+    }
+  };
+
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen pt-20 bg-gray-50 flex items-center justify-center">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="bg-white rounded-2xl shadow-xl p-8 w-full max-w-md"
+        >
+          <div className="w-16 h-16 bg-[#7B1F32] rounded-xl flex items-center justify-center mx-auto mb-6">
+            <Lock className="w-8 h-8 text-white" />
+          </div>
+          <h2 className="text-2xl font-bold text-gray-900 text-center mb-2">Admin Access</h2>
+          <p className="text-gray-600 text-center mb-6">Enter password to continue</p>
+          <form onSubmit={handleLogin} className="space-y-4">
+            <Input
+              type="password"
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="py-6 rounded-xl"
+              autoFocus
+            />
+            <Button type="submit" className="w-full bg-[#7B1F32] hover:bg-[#5a1625] py-6 rounded-xl">
+              Login
+            </Button>
+          </form>
+        </motion.div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen pt-20 bg-gray-50">
+      {/* Header */}
+      <section className="bg-gradient-to-br from-[#1A1A1A] to-[#2d2d2d] py-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+          >
+            <div className="flex items-center gap-3 mb-4">
+              <Shield className="w-8 h-8 text-[#7B1F32]" />
+              <span className="text-[#7B1F32] font-semibold tracking-wide uppercase text-sm">Admin Panel</span>
+            </div>
+            <h1 className="text-4xl lg:text-5xl font-bold text-white mt-4 mb-4">
+              Manage Product Prices
+            </h1>
+            <p className="text-xl text-gray-400 max-w-2xl">
+              Update prices, lead times, and stock status for all products.
+            </p>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Tabs */}
+      <section className="bg-white border-b">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="pt-6">
+            <TabsList className="grid grid-cols-2 w-80">
+              <TabsTrigger value="products" className="flex items-center gap-2">
+                <Package className="w-4 h-4" />
+                Products
+              </TabsTrigger>
+              <TabsTrigger value="orders" className="flex items-center gap-2">
+                <ShoppingBag className="w-4 h-4" />
+                Orders
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
+        </div>
+      </section>
+
+      {/* Filters */}
+      <section className="py-6 bg-white border-b">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          {activeTab === 'products' ? (
+            <div className="flex flex-col md:flex-row gap-4">
+              <div className="relative flex-1">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <Input
+                  placeholder="Search products..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-12 py-6 rounded-xl"
+                />
+              </div>
+              <Select value={filterCategory} onValueChange={setFilterCategory}>
+                <SelectTrigger className="w-full md:w-64 py-6 rounded-xl">
+                  <SelectValue placeholder="Filter by category" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Categories</SelectItem>
+                  <SelectItem value="straight_bar">Straight Bars</SelectItem>
+                  <SelectItem value="cut_bend">Cut & Bend</SelectItem>
+                  <SelectItem value="mesh">Mesh</SelectItem>
+                  <SelectItem value="accessories">Accessories</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          ) : (
+            <div>
+              <Select value={orderFilter} onValueChange={setOrderFilter}>
+                <SelectTrigger className="w-full md:w-64 py-6 rounded-xl">
+                  <SelectValue placeholder="Filter by status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Orders</SelectItem>
+                  <SelectItem value="pending">Pending</SelectItem>
+                  <SelectItem value="confirmed">Confirmed</SelectItem>
+                  <SelectItem value="processing">Processing</SelectItem>
+                  <SelectItem value="ready">Ready</SelectItem>
+                  <SelectItem value="delivered">Delivered</SelectItem>
+                  <SelectItem value="cancelled">Cancelled</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* Content */}
+      <section className="py-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          {activeTab === 'products' ? (
+            <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                <thead className="bg-gray-50 border-b">
+                  <tr>
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Product</th>
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Image</th>
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Category</th>
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Price/Ton</th>
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Price/Piece</th>
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Lead Time</th>
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Stock</th>
+                    <th className="px-6 py-4 text-right text-sm font-semibold text-gray-900">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y">
+                  {filteredProducts.map((product) => (
+                    <tr key={product.id} className="hover:bg-gray-50">
+                      <td className="px-6 py-4">
+                        <div className="font-medium text-gray-900">{product.name}</div>
+                        {product.diameter && (
+                          <div className="text-sm text-gray-500">Ø{product.diameter}mm</div>
+                        )}
+                      </td>
+                      <td className="px-6 py-4">
+                        {editingId === product.id ? (
+                          <div className="space-y-2">
+                            <Input
+                              type="text"
+                              value={editForm.image_url}
+                              onChange={(e) => setEditForm({ ...editForm, image_url: e.target.value })}
+                              className="w-48 text-xs"
+                              placeholder="Image URL"
+                            />
+                            <div className="flex items-center gap-2">
+                              <input
+                                type="file"
+                                accept="image/*"
+                                onChange={(e) => handleImageUpload(e.target.files[0], product.id)}
+                                className="hidden"
+                                id={`upload-${product.id}`}
+                              />
+                              <label htmlFor={`upload-${product.id}`} className="cursor-pointer">
+                                <div className="flex items-center gap-1 text-xs text-[#7B1F32] hover:underline">
+                                  <Upload className="w-3 h-3" />
+                                  Upload
+                                </div>
+                              </label>
+                            </div>
+                          </div>
+                        ) : (
+                          product.image_url ? (
+                            <img src={product.image_url} alt={product.name} className="w-12 h-12 object-cover rounded" />
+                          ) : (
+                            <div className="w-12 h-12 bg-gray-100 rounded flex items-center justify-center">
+                              <ImageIcon className="w-6 h-6 text-gray-400" />
+                            </div>
+                          )
+                        )}
+                      </td>
+                      <td className="px-6 py-4">
+                        <Badge variant="outline">
+                          {product.category?.replace('_', ' ')}
+                        </Badge>
+                      </td>
+                      <td className="px-6 py-4">
+                        {editingId === product.id ? (
+                          <Input
+                            type="number"
+                            value={editForm.price_per_ton}
+                            onChange={(e) => setEditForm({ ...editForm, price_per_ton: e.target.value })}
+                            className="w-32"
+                            placeholder="QAR"
+                          />
+                        ) : (
+                          <span className="font-semibold text-gray-900">
+                            {product.price_per_ton ? `${product.price_per_ton.toLocaleString()} QAR` : '-'}
+                          </span>
+                        )}
+                      </td>
+                      <td className="px-6 py-4">
+                        {editingId === product.id ? (
+                          <Input
+                            type="number"
+                            value={editForm.price_per_piece}
+                            onChange={(e) => setEditForm({ ...editForm, price_per_piece: e.target.value })}
+                            className="w-32"
+                            placeholder="QAR"
+                          />
+                        ) : (
+                          <span className="font-semibold text-gray-900">
+                            {product.price_per_piece ? `${product.price_per_piece.toLocaleString()} QAR` : '-'}
+                          </span>
+                        )}
+                      </td>
+                      <td className="px-6 py-4">
+                        {editingId === product.id ? (
+                          <Input
+                            value={editForm.lead_time}
+                            onChange={(e) => setEditForm({ ...editForm, lead_time: e.target.value })}
+                            className="w-32"
+                            placeholder="e.g. 1-2 hours"
+                          />
+                        ) : (
+                          <span className="text-gray-700">{product.lead_time || '-'}</span>
+                        )}
+                      </td>
+                      <td className="px-6 py-4">
+                        {editingId === product.id ? (
+                          <select
+                            value={editForm.in_stock ? 'true' : 'false'}
+                            onChange={(e) => setEditForm({ ...editForm, in_stock: e.target.value === 'true' })}
+                            className="border rounded px-2 py-1"
+                          >
+                            <option value="true">In Stock</option>
+                            <option value="false">Out of Stock</option>
+                          </select>
+                        ) : (
+                          <Badge className={product.in_stock ? 'bg-green-600' : 'bg-red-600'}>
+                            {product.in_stock ? 'In Stock' : 'Out of Stock'}
+                          </Badge>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 text-right">
+                        {editingId === product.id ? (
+                          <div className="flex items-center justify-end gap-2">
+                            <Button
+                              size="sm"
+                              onClick={() => saveEdit(product.id)}
+                              disabled={updateMutation.isPending}
+                              className="bg-green-600 hover:bg-green-700"
+                            >
+                              <Save className="w-4 h-4" />
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={cancelEdit}
+                            >
+                              <X className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        ) : (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => startEdit(product)}
+                          >
+                            <Edit className="w-4 h-4 mr-2" />
+                            Edit
+                          </Button>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+          ) : (
+            <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-gray-50 border-b">
+                    <tr>
+                      <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Order #</th>
+                      <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Customer</th>
+                      <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Phone</th>
+                      <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Items</th>
+                      <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Total</th>
+                      <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Status</th>
+                      <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Date</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y">
+                    {filteredOrders.map((order) => (
+                      <tr key={order.id} className="hover:bg-gray-50">
+                        <td className="px-6 py-4">
+                          <span className="font-mono text-sm font-medium">{order.order_number}</span>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="font-medium text-gray-900">{order.customer_name}</div>
+                          {order.company_name && (
+                            <div className="text-sm text-gray-500">{order.company_name}</div>
+                          )}
+                        </td>
+                        <td className="px-6 py-4">
+                          <a href={`tel:${order.customer_phone}`} className="text-[#7B1F32] hover:underline">
+                            {order.customer_phone}
+                          </a>
+                        </td>
+                        <td className="px-6 py-4">
+                          <span className="text-gray-700">{order.items?.length || 0} items</span>
+                        </td>
+                        <td className="px-6 py-4">
+                          <span className="font-semibold text-gray-900">
+                            {order.total_amount?.toLocaleString() || 0} QAR
+                          </span>
+                        </td>
+                        <td className="px-6 py-4">
+                          <Badge className={
+                            order.status === 'delivered' ? 'bg-green-600' :
+                            order.status === 'cancelled' ? 'bg-red-600' :
+                            order.status === 'processing' ? 'bg-blue-600' :
+                            'bg-yellow-600'
+                          }>
+                            {order.status}
+                          </Badge>
+                        </td>
+                        <td className="px-6 py-4">
+                          <span className="text-sm text-gray-500">
+                            {new Date(order.created_date).toLocaleDateString()}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+        </div>
+      </section>
+    </div>
+  );
+}

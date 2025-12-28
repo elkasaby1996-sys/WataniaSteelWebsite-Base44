@@ -1,0 +1,66 @@
+{
+  "name": "Product",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Product name"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "rebar",
+        "straight_bar",
+        "cut_bend",
+        "mesh",
+        "accessories"
+      ],
+      "description": "Product category"
+    },
+    "diameter": {
+      "type": "number",
+      "description": "Diameter in mm"
+    },
+    "material": {
+      "type": "string",
+      "default": "B500B",
+      "description": "Steel grade"
+    },
+    "price_per_ton": {
+      "type": "number",
+      "description": "Price per ton in QAR"
+    },
+    "price_per_piece": {
+      "type": "number",
+      "description": "Price per piece in QAR"
+    },
+    "lead_time": {
+      "type": "string",
+      "description": "Estimated delivery time"
+    },
+    "description": {
+      "type": "string",
+      "description": "Product description"
+    },
+    "image_url": {
+      "type": "string",
+      "description": "Product image URL"
+    },
+    "weight_per_meter": {
+      "type": "number",
+      "description": "Weight per meter in kg"
+    },
+    "in_stock": {
+      "type": "boolean",
+      "default": true
+    },
+    "featured": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "required": [
+    "name",
+    "category"
+  ]
+}

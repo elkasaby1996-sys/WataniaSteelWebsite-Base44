@@ -1,0 +1,74 @@
+{
+  "name": "QuoteRequest",
+  "type": "object",
+  "properties": {
+    "request_number": {
+      "type": "string"
+    },
+    "customer_name": {
+      "type": "string"
+    },
+    "customer_email": {
+      "type": "string"
+    },
+    "customer_phone": {
+      "type": "string"
+    },
+    "company_name": {
+      "type": "string"
+    },
+    "project_name": {
+      "type": "string"
+    },
+    "service_type": {
+      "type": "string",
+      "enum": [
+        "cut_bend",
+        "straight_bar",
+        "mesh",
+        "custom_fabrication"
+      ]
+    },
+    "description": {
+      "type": "string"
+    },
+    "file_urls": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "quantity_estimate": {
+      "type": "string"
+    },
+    "urgency": {
+      "type": "string",
+      "enum": [
+        "standard",
+        "urgent",
+        "express"
+      ]
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "new",
+        "reviewing",
+        "quoted",
+        "accepted",
+        "declined"
+      ],
+      "default": "new"
+    },
+    "quoted_amount": {
+      "type": "number"
+    },
+    "admin_notes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "customer_name",
+    "customer_phone"
+  ]
+}

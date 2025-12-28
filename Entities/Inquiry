@@ -1,0 +1,38 @@
+{
+  "name": "Inquiry",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string"
+    },
+    "email": {
+      "type": "string"
+    },
+    "phone": {
+      "type": "string"
+    },
+    "company": {
+      "type": "string"
+    },
+    "subject": {
+      "type": "string"
+    },
+    "message": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "new",
+        "replied",
+        "closed"
+      ],
+      "default": "new"
+    }
+  },
+  "required": [
+    "name",
+    "phone",
+    "message"
+  ]
+}

@@ -1,0 +1,49 @@
+{
+  "name": "CartItem",
+  "type": "object",
+  "properties": {
+    "session_id": {
+      "type": "string",
+      "description": "User session or user ID"
+    },
+    "product_id": {
+      "type": "string"
+    },
+    "product_name": {
+      "type": "string"
+    },
+    "diameter": {
+      "type": "number"
+    },
+    "quantity": {
+      "type": "number"
+    },
+    "unit": {
+      "type": "string",
+      "enum": [
+        "pieces",
+        "tons"
+      ]
+    },
+    "length": {
+      "type": "number",
+      "description": "Length in meters"
+    },
+    "shape": {
+      "type": "string"
+    },
+    "unit_price": {
+      "type": "number"
+    },
+    "total_price": {
+      "type": "number"
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "product_id",
+    "quantity"
+  ]
+}
