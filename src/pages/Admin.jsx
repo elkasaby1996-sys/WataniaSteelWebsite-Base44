@@ -150,9 +150,6 @@ export default function Admin() {
         ...productForm,
         slug: productForm.slug.trim(),
       };
-      if (!payload.id) {
-        delete payload.id;
-      }
       const saved = await saveProduct(payload);
       toast.success('Product saved');
       setProducts((prev) => {
@@ -201,9 +198,6 @@ export default function Admin() {
         price_qr: Number(variantForm.price_qr),
         stock_qty: variantForm.stock_qty ? Number(variantForm.stock_qty) : null,
       };
-      if (!payload.id) {
-        delete payload.id;
-      }
       const saved = await saveVariant(payload);
       toast.success('Variant saved');
       setProducts((prev) =>
@@ -574,8 +568,6 @@ export default function Admin() {
                       <div className="space-y-2">
                         <Label>Diameter (mm)</Label>
                         <Input
-                          type="number"
-                          step="0.1"
                           value={variantForm.diameter_mm}
                           onChange={(event) => setVariantForm({ ...variantForm, diameter_mm: event.target.value })}
                         />
