@@ -2,7 +2,6 @@ import React from 'react';
 import { Route, Routes } from 'react-router-dom';
 import { Toaster } from 'sonner';
 import Layout from './Layout.jsx';
-import ScrollToTop from './components/ScrollToTop.jsx';
 import About from './pages/About.jsx';
 import AdminPrices from './pages/AdminPrices.jsx';
 import Calculator from './pages/Calculator.jsx';
@@ -22,7 +21,6 @@ const withLayout = (page) => <Layout>{page}</Layout>;
 export default function App() {
   return (
     <>
-      <ScrollToTop />
       <Routes>
         <Route path="/" element={withLayout(<Home />)} />
         <Route path="/about" element={withLayout(<About />)} />
