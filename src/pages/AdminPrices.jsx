@@ -365,7 +365,7 @@ export default function AdminPrices() {
                           <select
                             value={editForm.in_stock ? 'true' : 'false'}
                             onChange={(e) => setEditForm({ ...editForm, in_stock: e.target.value === 'true' })}
-                            className="border rounded px-2 py-1"
+                            className="border border-black rounded px-2 py-1"
                           >
                             <option value="true">In Stock</option>
                             <option value="false">Out of Stock</option>
