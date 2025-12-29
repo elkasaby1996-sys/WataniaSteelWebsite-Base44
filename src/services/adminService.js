@@ -50,31 +50,9 @@ export const fetchAdminProducts = async () => {
 };
 
 export const saveProduct = async (payload) => {
-  const { id, ...rest } = payload;
-  const insertPayload = {
-    name: rest.name,
-    slug: rest.slug,
-    description: rest.description ?? null,
-    category: rest.category ?? null,
-    active: rest.active ?? true,
-    primary_image_url: rest.primary_image_url ?? null,
-  };
-  if (id) {
-    const { data, error } = await supabase
-      .from('products')
-      .update(rest)
-      .eq('id', id)
-      .select('*')
-      .single();
-    if (error) {
-      throw new Error(error.message);
-    }
-    return data;
-  }
-
   const { data, error } = await supabase
     .from('products')
-    .insert(insertPayload)
+    .upsert(payload)
     .select('*')
     .single();
   if (error) {
@@ -91,26 +69,9 @@ export const removeProduct = async (productId) => {
 };
 
 export const saveVariant = async (payload) => {
-  const { id, ...rest } = payload;
-  if (!id) {
-    delete rest.id;
-  }
-  if (id) {
-    const { data, error } = await supabase
-      .from('product_variants')
-      .update(rest)
-      .eq('id', id)
-      .select('*')
-      .single();
-    if (error) {
-      throw new Error(error.message);
-    }
-    return data;
-  }
-
   const { data, error } = await supabase
     .from('product_variants')
-    .insert(rest)
+    .upsert(payload)
     .select('*')
     .single();
   if (error) {
