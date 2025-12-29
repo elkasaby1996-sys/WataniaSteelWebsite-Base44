@@ -5,7 +5,6 @@ import MachinesSection from '@/components/sections/MachinesSection';
 import DiametersSection from '@/components/sections/DiametersSection';
 import CertificationsSection from '@/components/sections/CertificationsSection';
 import ProjectsPreview from '@/components/sections/ProjectsPreview';
-import CapabilitiesStrip from '@/components/sections/CapabilitiesStrip';
 import CapabilitiesHighlight from '@/components/sections/CapabilitiesHighlight';
 
 export default function Home() {
@@ -17,7 +16,6 @@ export default function Home() {
       <DiametersSection />
       <CertificationsSection />
       <ProjectsPreview />
-      <CapabilitiesStrip />
       <CapabilitiesHighlight />
     </div>
   );

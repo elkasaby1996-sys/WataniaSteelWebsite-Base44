@@ -1,14 +1,14 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
-import { 
-  Factory, 
-  Phone, 
-  Mail, 
-  MapPin, 
-  Clock, 
-  Facebook, 
-  Instagram, 
+import {
+  Factory,
+  Phone,
+  Mail,
+  MapPin,
+  Clock,
+  Facebook,
+  Instagram,
   Linkedin,
   ArrowRight
 } from 'lucide-react';
@@ -45,13 +45,32 @@ export default function Footer() {
             </div>
             <div className="flex flex-wrap gap-4">
               <Link to={createPageUrl('Quote')}>
-                <Button className="bg-white text-[#691A2A] hover:bg-gray-100 px-8 py-6 text-lg font-semibold rounded-xl">
+                <Button
+                  variant="outline"
+                  className="bg-white border-white hover:bg-gray-100 px-8 py-6 text-lg font-semibold rounded-xl"
+                  style={{ color: '#691A2A' }}
+                >
                   Get Quote
                 </Button>
               </Link>
+
+              <Link to={createPageUrl('Contact')}>
+                <Button
+                  variant="outline"
+                  className="bg-white border-white hover:bg-gray-100 px-8 py-6 text-lg font-semibold rounded-xl"
+                  style={{ color: '#691A2A' }}
+                >
+                  Contact Us
+                </Button>
+              </Link>
+
               <a href="tel:+97444444444">
-                <Button variant="outline" className="border-white text-[#691A2A] hover:bg-white hover:text-[#691A2A] px-8 py-6 text-lg font-semibold rounded-xl">
-                  <Phone className="mr-2 w-5 h-5" />
+                <Button
+                  variant="outline"
+                  className="bg-white border-white hover:bg-white px-8 py-6 text-lg font-semibold rounded-xl"
+                  style={{ color: '#691A2A' }}
+                >
+                  <Phone className="mr-2 w-5 h-5" style={{ color: '#691A2A' }} />
                   Call Now
                 </Button>
               </a>
@@ -66,7 +85,7 @@ export default function Footer() {
           {/* Company Info */}
           <div>
             <div className="mb-6">
-              <img 
+              <img
                 src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/69353f43c0a0fc2b084bfd5a/96e0be8f8_download11111.png"
                 alt="Al Watania Steel"
                 className="h-20 w-auto object-contain mb-4"
@@ -94,8 +113,8 @@ export default function Footer() {
             <ul className="space-y-3">
               {quickLinks.map((link) => (
                 <li key={link.name}>
-                  <Link 
-                    to={createPageUrl(link.href)} 
+                  <Link
+                    to={createPageUrl(link.href)}
                     className="text-gray-400 hover:text-white transition-colors flex items-center gap-2 group"
                   >
                     <ArrowRight className="w-4 h-4 opacity-0 group-hover:opacity-100 -ml-6 group-hover:ml-0 transition-all" />
