@@ -42,7 +42,7 @@ export default function CTASection({
             <Link to={createPageUrl(secondaryAction.page)}>
               <Button 
                 variant="outline" 
-                className="border-white text-white hover:bg-white hover:text-[#1A1A1A] px-8 py-6 text-lg rounded-xl"
+                className="border-white text-[#691A2A] hover:bg-white hover:text-[#691A2A] px-8 py-6 text-lg rounded-xl"
               >
                 {secondaryAction.icon && <secondaryAction.icon className="mr-2 w-5 h-5" />}
                 {secondaryAction.label}

@@ -120,7 +120,7 @@ export default function CalculatorPage() {
                             value={item.diameter.toString()} 
                             onValueChange={(v) => updateItem(index, 'diameter', parseInt(v))}
                           >
-                            <SelectTrigger className="py-6 rounded-xl bg-white">
+                            <SelectTrigger className="py-3 rounded-xl bg-white">
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
@@ -140,7 +140,7 @@ export default function CalculatorPage() {
                             step="0.1"
                             value={item.length}
                             onChange={(e) => updateItem(index, 'length', parseFloat(e.target.value) || 0)}
-                            className="py-6 rounded-xl bg-white"
+                            className="py-3 rounded-xl bg-white"
                           />
                         </div>
                         <div className="space-y-2">
@@ -150,7 +150,7 @@ export default function CalculatorPage() {
                             min="0"
                             value={item.quantity}
                             onChange={(e) => updateItem(index, 'quantity', parseInt(e.target.value) || 0)}
-                            className="py-6 rounded-xl bg-white"
+                            className="py-3 rounded-xl bg-white"
                           />
                         </div>
                         <div className="flex items-end gap-2">
