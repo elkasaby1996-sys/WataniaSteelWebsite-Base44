@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -14,7 +14,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { 
-  Upload, 
   CheckCircle2, 
   Loader2,
   Plus,
@@ -33,27 +32,16 @@ const weightPerMeter = {
   18: 2.0, 20: 2.47, 22: 2.98, 25: 3.85, 32: 6.31,
 };
 
-const shapes = [
-  'Straight Bar',
-  'Stirrup - Rectangular',
-  'Stirrup - Square',
-  'L-Bar',
-  'U-Bar',
-  'Hook',
-  'Spiral',
-  'Custom Shape',
-];
-
 const defaultDeliveryOptions = [
   { value: 'trailer', label: 'Trailer Delivery', price: 200, description: 'Standard delivery' },
   { value: 'crane', label: 'Crane Unloading', price: 700, description: 'For heavy loads' },
   { value: 'pickup', label: 'Self Pickup', price: 0, description: 'Collect from factory' },
 ];
 
-export default function ManualOrderPanel({ settings, onBackToStore }) {
-  const [orderType, setOrderType] = useState('straight');
+export default function ManualOrderPanel({ settings, products = [], onBackToStore }) {
+  const [orderType, setOrderType] = useState('manual');
   const [items, setItems] = useState([
-    { diameter: 12, length: 12, quantity: 100, shape: 'Straight Bar', unit: 'pieces' },
+    { diameter: 12, length: 12, quantity: 100, shape: '', unit: 'pieces' },
   ]);
   const [formData, setFormData] = useState({
     customer_name: '',
@@ -83,9 +71,26 @@ export default function ManualOrderPanel({ settings, onBackToStore }) {
   }, [settings]);
 
   const expressFeeValue = settings?.express_fee?.enabled ? settings.express_fee?.fee ?? 0 : 0;
+  const productNames = useMemo(
+    () => Array.from(new Set(products.map((product) => product.name).filter(Boolean))),
+    [products]
+  );
+
+  useEffect(() => {
+    if (!productNames.length) {
+      return;
+    }
+    setItems((prevItems) =>
+      prevItems.map((item) =>
+        item.shape && productNames.includes(item.shape)
+          ? item
+          : { ...item, shape: productNames[0] }
+      )
+    );
+  }, [productNames]);
 
   const addItem = () => {
-    setItems([...items, { diameter: 12, length: 12, quantity: 100, shape: 'Straight Bar', unit: 'pieces' }]);
+    setItems([...items, { diameter: 12, length: 12, quantity: 100, shape: '', unit: 'pieces' }]);
   };
 
   const removeItem = (index) => {
@@ -110,13 +115,52 @@ export default function ManualOrderPanel({ settings, onBackToStore }) {
     weightKg: calculateWeight(item),
   }));
 
-  const totalWeight = itemsWithWeight.reduce((sum, item) => sum + item.weightKg, 0);
+  const activeItems = itemsWithWeight;
+  const totalWeight = activeItems.reduce((sum, item) => sum + item.weightKg, 0);
   const deliveryFee = deliveryOptions.find((d) => d.value === formData.delivery_method)?.price || 0;
   const expressFee = formData.is_express ? expressFeeValue : 0;
   const cutAndBendFeeValue = settings?.cut_bend_fee?.fee ?? 0;
-  const hasCutAndBend = itemsWithWeight.some((item) => Number(item.length) > 0 && item.length < 12);
+  const hasCutAndBend = activeItems.some((item) => Number(item.length) > 0 && item.length < 12);
   const cutAndBendFee = hasCutAndBend ? cutAndBendFeeValue : 0;
   const additionalFeesTotal = deliveryFee + expressFee + cutAndBendFee;
+
+  const priceUnitMultiplier = (unitType, item) => {
+    const normalized = unitType?.toLowerCase() ?? '';
+    if (!normalized) {
+      return item.weightKg > 0 ? item.weightKg / 1000 : item.quantity;
+    }
+    if (normalized.includes('ton')) {
+      return item.weightKg / 1000;
+    }
+    if (normalized.includes('kg')) {
+      return item.weightKg;
+    }
+    if (normalized.includes('meter') || normalized === 'm') {
+      return item.length * item.quantity;
+    }
+    if (normalized.includes('piece') || normalized.includes('pcs') || normalized.includes('pc')) {
+      return item.quantity;
+    }
+    return item.weightKg || item.quantity;
+  };
+
+  const productTotals = activeItems.map((item) => {
+    const productByName = products.find((product) => product.name === item.shape);
+    const productByDiameter = products.find((product) =>
+      product.product_variants?.some((variant) => variant.diameter_mm === item.diameter)
+    );
+    const product = productByName || productByDiameter;
+    const variant = product?.product_variants?.find(
+      (variant) => variant.diameter_mm === item.diameter
+    );
+    const price = variant?.price_qr ?? product?.price_qr ?? 0;
+    const unitType = variant?.unit_type ?? product?.unit_type ?? '';
+    const multiplier = priceUnitMultiplier(unitType, item);
+    return price * multiplier;
+  });
+
+  const productsTotal = productTotals.reduce((sum, total) => sum + total, 0);
+  const orderTotal = productsTotal + additionalFeesTotal;
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -163,7 +207,7 @@ export default function ManualOrderPanel({ settings, onBackToStore }) {
               onClick={() => {
                 setSubmitted(false);
                 setOrderNumber('');
-                setItems([{ diameter: 12, length: 12, quantity: 100, shape: 'Straight Bar', unit: 'pieces' }]);
+                setItems([{ diameter: 12, length: 12, quantity: 100, shape: '', unit: 'pieces' }]);
               }}
               className="bg-[#7B1F32] hover:bg-[#5a1625] text-white px-8 py-6 rounded-xl"
             >
@@ -193,95 +237,12 @@ export default function ManualOrderPanel({ settings, onBackToStore }) {
           </div>
 
           <Tabs value={orderType} onValueChange={setOrderType} className="bg-white rounded-2xl shadow-lg p-8">
-            <TabsList className="grid grid-cols-3 mb-8">
-              <TabsTrigger value="straight" className="py-4">
-                <Truck className="w-4 h-4 mr-2" />
-                Straight Bars
-              </TabsTrigger>
+            <TabsList className="grid grid-cols-1 mb-8 bg-transparent p-0 h-auto">
               <TabsTrigger value="manual" className="py-4">
                 <Calculator className="w-4 h-4 mr-2" />
                 Manual Entry
               </TabsTrigger>
-              <TabsTrigger value="upload" className="py-4">
-                <Upload className="w-4 h-4 mr-2" />
-                Upload BOQ
-              </TabsTrigger>
             </TabsList>
-
-            <TabsContent value="straight" className="space-y-6">
-              <h3 className="text-lg font-bold text-gray-900">Order Straight Bars by Diameter</h3>
-              
-              {itemsWithWeight.map((item, index) => (
-                <div key={index} className="bg-gray-50 rounded-xl p-6">
-                  <div className="grid md:grid-cols-5 gap-4 items-end">
-                    <div className="space-y-2">
-                      <Label>Diameter</Label>
-                      <Select 
-                        value={item.diameter.toString()} 
-                        onValueChange={(v) => updateItem(index, 'diameter', parseInt(v, 10))}
-                      >
-                        <SelectTrigger className="py-3 rounded-xl">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {diameters.map((d) => (
-                            <SelectItem key={d} value={d.toString()}>{d}mm</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Length (m)</Label>
-                        <Input
-                          type="number"
-                          value={item.length}
-                          onChange={(e) => updateItem(index, 'length', parseFloat(e.target.value))}
-                          className="py-3 rounded-xl"
-                        />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Quantity</Label>
-                        <Input
-                          type="number"
-                          value={item.quantity}
-                          onChange={(e) => updateItem(index, 'quantity', parseInt(e.target.value, 10))}
-                          className="py-3 rounded-xl"
-                        />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Weight (kg)</Label>
-                      <div className="bg-[#7B1F32]/10 text-[#7B1F32] font-bold py-3 px-4 rounded-xl text-center">
-                        {item.weightKg.toFixed(2)} kg
-                      </div>
-                    </div>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={() => removeItem(index)}
-                        className="py-3 rounded-xl"
-                        disabled={items.length === 1}
-                      >
-                      <Trash2 className="w-5 h-5" />
-                    </Button>
-                  </div>
-                </div>
-              ))}
-
-              <div className="flex justify-between items-center">
-                <Button type="button" variant="outline" onClick={addItem} className="rounded-xl">
-                  <Plus className="w-4 h-4 mr-2" />
-                  Add Item
-                </Button>
-                <div className="text-right">
-                  <div className="text-sm text-gray-500">Total Weight</div>
-                  <div className="text-2xl font-black text-[#7B1F32]">{totalWeight.toFixed(2)} kg</div>
-                  <div className="text-sm text-gray-500">({(totalWeight / 1000).toFixed(2)} tons)</div>
-                  <p className="text-xs text-gray-500 mt-2">
-                    Note: For all bars less than 12 Meters, a cut-and-bend fee will be added.
-                  </p>
-                </div>
-              </div>
-            </TabsContent>
 
             <TabsContent value="manual" className="space-y-6">
               <h3 className="text-lg font-bold text-gray-900">Enter Shapes Manually</h3>
@@ -292,16 +253,22 @@ export default function ManualOrderPanel({ settings, onBackToStore }) {
                     <div className="space-y-2">
                       <Label>Shape</Label>
                       <Select 
-                        value={item.shape} 
+                        value={item.shape || ''} 
                         onValueChange={(v) => updateItem(index, 'shape', v)}
                       >
                         <SelectTrigger className="py-3 rounded-xl">
-                          <SelectValue />
+                          <SelectValue placeholder="Select product" />
                         </SelectTrigger>
                         <SelectContent>
-                          {shapes.map((s) => (
-                            <SelectItem key={s} value={s}>{s}</SelectItem>
-                          ))}
+                          {productNames.length ? (
+                            productNames.map((name) => (
+                              <SelectItem key={name} value={name}>{name}</SelectItem>
+                            ))
+                          ) : (
+                            <SelectItem value="no-products" disabled>
+                              No products available
+                            </SelectItem>
+                          )}
                         </SelectContent>
                       </Select>
                     </div>
@@ -373,29 +340,6 @@ export default function ManualOrderPanel({ settings, onBackToStore }) {
               </div>
             </TabsContent>
 
-            <TabsContent value="upload" className="space-y-6">
-              <h3 className="text-lg font-bold text-gray-900">Upload BOQ / BBS Document</h3>
-              
-              <div 
-                className="border-2 border-dashed border-gray-300 rounded-2xl p-8 text-center hover:border-[#7B1F32] transition-colors cursor-pointer"
-                onClick={() => document.getElementById('boq-upload').click()}
-              >
-                <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-700 font-medium mb-2">
-                  {boqFile ? boqFile.name : 'Click to upload BOQ / BBS file'}
-                </p>
-                <p className="text-gray-500 text-sm">
-                  PDF, Excel, or Image files accepted
-                </p>
-                <input
-                  id="boq-upload"
-                  type="file"
-                  accept=".pdf,.xls,.xlsx,.jpg,.jpeg,.png"
-                  onChange={(e) => setBoqFile(e.target.files[0])}
-                  className="hidden"
-                />
-              </div>
-            </TabsContent>
           </Tabs>
 
           <div className="bg-white rounded-2xl shadow-lg p-8">
@@ -441,6 +385,29 @@ export default function ManualOrderPanel({ settings, onBackToStore }) {
                   className="py-3 rounded-xl"
                 />
               </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-2xl shadow-lg p-8">
+            <h2 className="text-xl font-bold text-gray-900 mb-6">Apply BOQ (Optional)</h2>
+            <div
+              className="border-2 border-dashed border-gray-300 rounded-2xl p-8 text-center hover:border-[#7B1F32] transition-colors cursor-pointer"
+              onClick={() => document.getElementById('boq-upload').click()}
+            >
+              <Truck className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+              <p className="text-gray-700 font-medium mb-2">
+                {boqFile ? boqFile.name : 'Click to upload BOQ file'}
+              </p>
+              <p className="text-gray-500 text-sm">
+                Any file format accepted
+              </p>
+              <input
+                id="boq-upload"
+                type="file"
+                accept="*"
+                onChange={(e) => setBoqFile(e.target.files[0])}
+                className="hidden"
+              />
             </div>
           </div>
 
@@ -569,8 +536,8 @@ export default function ManualOrderPanel({ settings, onBackToStore }) {
                 </div>
               )}
               <div className="border-t border-white/20 pt-4 flex justify-between text-xl">
-                <span>Additional Fees</span>
-                <span className="font-black text-[#7B1F32]">{additionalFeesTotal} QAR</span>
+                <span>Order Total</span>
+                <span className="font-black text-[#7B1F32]">{orderTotal.toFixed(2)} QAR</span>
               </div>
             </div>
             <Button
