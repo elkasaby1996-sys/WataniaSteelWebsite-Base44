@@ -225,7 +225,7 @@ export default function FAQ() {
             <a href="tel:+97444444444">
               <Button
                 variant="outline"
-                className="border-white !text-[#691A2A] hover:bg-white hover:text-[#691A2A] px-8 py-6 rounded-xl"
+                className="border-white hover:bg-white hover:text-[#691A2A] px-8 py-6 rounded-xl"
                 style={{ color: '#691A2A' }}
               >
                 <Phone className="mr-2 w-5 h-5" />
