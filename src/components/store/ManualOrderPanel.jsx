@@ -272,8 +272,8 @@ export default function ManualOrderPanel({ settings, products = [], onBackToStor
                     </div>
                     <div className="space-y-2">
                       <Label>Diameter</Label>
-                      <Select 
-                        value={item.diameter.toString()} 
+                      <Select
+                        value={item.diameter.toString()}
                         onValueChange={(v) => updateItem(index, 'diameter', parseInt(v, 10))}
                       >
                         <SelectTrigger className="py-3 rounded-xl">
@@ -281,28 +281,30 @@ export default function ManualOrderPanel({ settings, products = [], onBackToStor
                         </SelectTrigger>
                         <SelectContent>
                           {diameters.map((d) => (
-                            <SelectItem key={d} value={d.toString()}>{d}mm</SelectItem>
+                            <SelectItem key={d} value={d.toString()}>
+                              {d}mm
+                            </SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
                     </div>
                     <div className="space-y-2">
                       <Label>Length (m)</Label>
-                        <Input
-                          type="number"
-                          value={item.length}
-                          onChange={(e) => updateItem(index, 'length', parseFloat(e.target.value))}
-                          className="py-3 rounded-xl"
-                        />
+                      <Input
+                        type="number"
+                        value={item.length}
+                        onChange={(e) => updateItem(index, 'length', parseFloat(e.target.value))}
+                        className="py-3 rounded-xl"
+                      />
                     </div>
                     <div className="space-y-2">
                       <Label>Quantity</Label>
-                        <Input
-                          type="number"
-                          value={item.quantity}
-                          onChange={(e) => updateItem(index, 'quantity', parseInt(e.target.value, 10))}
-                          className="py-3 rounded-xl"
-                        />
+                      <Input
+                        type="number"
+                        value={item.quantity}
+                        onChange={(e) => updateItem(index, 'quantity', parseInt(e.target.value, 10))}
+                        className="py-3 rounded-xl"
+                      />
                     </div>
                     <div className="space-y-2">
                       <Label>Weight (kg)</Label>
@@ -310,6 +312,7 @@ export default function ManualOrderPanel({ settings, products = [], onBackToStor
                         {item.weightKg.toFixed(2)} kg
                       </div>
                     </div>
+                    <div className="flex justify-center">
                       <Button
                         type="button"
                         variant="outline"
