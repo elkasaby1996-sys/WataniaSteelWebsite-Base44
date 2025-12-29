@@ -229,7 +229,7 @@ export default function Services() {
                   and get back to you within hours.
                 </p>
                 <Link to={createPageUrl('Quote')}>
-                  <Button className="bg-white !text-[#691A2A] hover:bg-gray-100 px-8 py-6 text-lg font-semibold rounded-xl">
+                  <Button className="bg-white text-[#691A2A] hover:bg-gray-100 px-8 py-6 text-lg font-semibold rounded-xl">
                     <FileText className="mr-2 w-5 h-5" />
                     Upload & Get Quote
                   </Button>

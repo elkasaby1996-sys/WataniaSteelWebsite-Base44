@@ -223,7 +223,7 @@ export default function FAQ() {
               </Button>
             </Link>
             <a href="tel:+97444444444">
-              <Button variant="outline" className="border-white !text-[#691A2A] hover:bg-white hover:text-[#691A2A] px-8 py-6 rounded-xl">
+              <Button variant="outline" className="border-white text-[#691A2A] hover:bg-white hover:text-[#691A2A] px-8 py-6 rounded-xl">
                 <Phone className="mr-2 w-5 h-5" />
                 Call Hotline
               </Button>
