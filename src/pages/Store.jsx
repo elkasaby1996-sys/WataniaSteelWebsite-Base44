@@ -151,13 +151,13 @@ export default function Store() {
                 placeholder="Search products..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-12 py-3 text-lg rounded-xl border-gray-200"
+                className="pl-12 h-12 text-base rounded-xl border-gray-200"
               />
             </div>
 
             {/* Category Filter */}
             <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-              <SelectTrigger className="w-full lg:w-48 py-3 rounded-xl">
+              <SelectTrigger className="w-full lg:w-48 h-12 rounded-xl">
                 <SelectValue placeholder="Category" />
               </SelectTrigger>
               <SelectContent>
@@ -171,7 +171,7 @@ export default function Store() {
 
             {/* Diameter Filter */}
             <Select value={selectedDiameter} onValueChange={setSelectedDiameter}>
-              <SelectTrigger className="w-full lg:w-48 py-3 rounded-xl">
+              <SelectTrigger className="w-full lg:w-48 h-12 rounded-xl">
                 <SelectValue placeholder="Diameter" />
               </SelectTrigger>
               <SelectContent>
@@ -202,28 +202,6 @@ export default function Store() {
             >
               Order Manually
             </Button>
-          </div>
-        </div>
-      </section>
-
-      {/* Diameter Quick Select */}
-      <section className="py-8 bg-white border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center gap-4 overflow-x-auto pb-2">
-            <span className="text-sm font-semibold text-gray-500 whitespace-nowrap">Quick Select:</span>
-            {diameters.map((dia) => (
-              <button
-                key={dia}
-                onClick={() => setSelectedDiameter(dia.toString())}
-                className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all ${
-                  selectedDiameter === dia.toString()
-                    ? 'bg-[#7B1F32] text-white'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                }`}
-              >
-                {dia}mm
-              </button>
-            ))}
           </div>
         </div>
       </section>
@@ -356,7 +334,7 @@ export default function Store() {
 
       {manualOpen && (
         <div ref={manualRef}>
-          <ManualOrderPanel settings={settings} onBackToStore={closeManualOrder} />
+          <ManualOrderPanel settings={settings} products={products} onBackToStore={closeManualOrder} />
         </div>
       )}
 
