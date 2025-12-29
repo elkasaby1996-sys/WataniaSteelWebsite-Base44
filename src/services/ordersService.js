@@ -36,7 +36,6 @@ export const createManualOrder = async ({
     subtotal_qr: 0,
     delivery_fee_qr: deliveryFee,
     express_fee_qr: expressFee,
-    cut_bend_fee_qr: cutAndBendFee,
     grand_total_qr: deliveryFee + expressFee + cutAndBendFee,
   };
 
