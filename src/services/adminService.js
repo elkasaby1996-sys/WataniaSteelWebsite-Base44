@@ -51,14 +51,7 @@ export const fetchAdminProducts = async () => {
 
 export const saveProduct = async (payload) => {
   const { id, ...rest } = payload;
-  const insertPayload = {
-    name: rest.name,
-    slug: rest.slug,
-    description: rest.description ?? null,
-    category: rest.category ?? null,
-    active: rest.active ?? true,
-    primary_image_url: rest.primary_image_url ?? null,
-  };
+
   if (id) {
     const { data, error } = await supabase
       .from('products')
@@ -72,9 +65,18 @@ export const saveProduct = async (payload) => {
     return data;
   }
 
+  const insertPayload = {
+    name: rest.name,
+    slug: rest.slug,
+    description: rest.description ?? null,
+    category: rest.category ?? null,
+    active: rest.active ?? true,
+    primary_image_url: rest.primary_image_url ?? null,
+  };
+
   const { data, error } = await supabase
     .from('products')
-    .insert(insertPayload, { defaultToNull: false })
+    .insert(insertPayload)
     .select('*')
     .single();
   if (error) {
@@ -92,9 +94,7 @@ export const removeProduct = async (productId) => {
 
 export const saveVariant = async (payload) => {
   const { id, ...rest } = payload;
-  if (!id) {
-    delete rest.id;
-  }
+
   if (id) {
     const { data, error } = await supabase
       .from('product_variants')
@@ -110,7 +110,7 @@ export const saveVariant = async (payload) => {
 
   const { data, error } = await supabase
     .from('product_variants')
-    .insert(rest, { defaultToNull: false })
+    .insert(rest)
     .select('*')
     .single();
   if (error) {
@@ -137,7 +137,7 @@ export const uploadProductImage = async (productId, file) => {
   const { data: publicUrl } = supabase.storage.from('product-images').getPublicUrl(filePath);
   const { data, error } = await supabase
     .from('product_images')
-    .insert({ product_id: productId, image_url: publicUrl.publicUrl }, { defaultToNull: false })
+    .insert({ product_id: productId, image_url: publicUrl.publicUrl })
     .select('*')
     .single();
   if (error) {
@@ -178,16 +178,13 @@ export const seedSampleProducts = async () => {
 
   const { data: rebar, error: rebarError } = await supabase
     .from('products')
-    .insert(
-      {
+    .insert({
       name: 'Rebar B500B',
       slug: 'rebar-b500b',
       category: 'rebar',
       description: 'Standard B500B reinforcement bars in multiple diameters.',
       active: true,
-      },
-      { defaultToNull: false }
-    )
+    })
     .select('*')
     .single();
   if (rebarError) {
@@ -204,9 +201,7 @@ export const seedSampleProducts = async () => {
     grade: 'B500B',
     active: true,
   }));
-  const { error: variantError } = await supabase
-    .from('product_variants')
-    .insert(variants, { defaultToNull: false });
+  const { error: variantError } = await supabase.from('product_variants').insert(variants);
   if (variantError) {
     throw new Error(variantError.message);
   }
