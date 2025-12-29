@@ -113,6 +113,10 @@ export default function ManualOrderPanel({ settings, onBackToStore }) {
   const totalWeight = itemsWithWeight.reduce((sum, item) => sum + item.weightKg, 0);
   const deliveryFee = deliveryOptions.find((d) => d.value === formData.delivery_method)?.price || 0;
   const expressFee = formData.is_express ? expressFeeValue : 0;
+  const cutAndBendFeeValue = settings?.cut_bend_fee?.fee ?? 0;
+  const hasCutAndBend = itemsWithWeight.some((item) => Number(item.length) > 0 && item.length < 12);
+  const cutAndBendFee = hasCutAndBend ? cutAndBendFeeValue : 0;
+  const additionalFeesTotal = deliveryFee + expressFee + cutAndBendFee;
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -124,6 +128,7 @@ export default function ManualOrderPanel({ settings, onBackToStore }) {
         orderType,
         deliveryFee,
         expressFee,
+        cutAndBendFee,
         totalWeightKg: Number(totalWeight.toFixed(2)),
         boqFile,
       });
@@ -271,6 +276,9 @@ export default function ManualOrderPanel({ settings, onBackToStore }) {
                   <div className="text-sm text-gray-500">Total Weight</div>
                   <div className="text-2xl font-black text-[#7B1F32]">{totalWeight.toFixed(2)} kg</div>
                   <div className="text-sm text-gray-500">({(totalWeight / 1000).toFixed(2)} tons)</div>
+                  <p className="text-xs text-gray-500 mt-2">
+                    Note: For all bars less than 12 Meters, a cut-and-bend fee will be added.
+                  </p>
                 </div>
               </div>
             </TabsContent>
@@ -358,6 +366,9 @@ export default function ManualOrderPanel({ settings, onBackToStore }) {
                 <div className="text-right">
                   <div className="text-sm text-gray-500">Total Weight</div>
                   <div className="text-2xl font-black text-[#7B1F32]">{totalWeight.toFixed(2)} kg</div>
+                  <p className="text-xs text-gray-500 mt-2">
+                    Note: For all bars less than 12 Meters, a cut-and-bend fee will be added.
+                  </p>
                 </div>
               </div>
             </TabsContent>
@@ -551,9 +562,15 @@ export default function ManualOrderPanel({ settings, onBackToStore }) {
                   <span className="font-bold">{expressFee} QAR</span>
                 </div>
               )}
+              {hasCutAndBend && (
+                <div className="flex justify-between">
+                  <span className="text-gray-400">Cut-and-Bend Fee</span>
+                  <span className="font-bold">{cutAndBendFee} QAR</span>
+                </div>
+              )}
               <div className="border-t border-white/20 pt-4 flex justify-between text-xl">
                 <span>Additional Fees</span>
-                <span className="font-black text-[#7B1F32]">{deliveryFee + expressFee} QAR</span>
+                <span className="font-black text-[#7B1F32]">{additionalFeesTotal} QAR</span>
               </div>
             </div>
             <Button

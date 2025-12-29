@@ -66,6 +66,7 @@ create table if not exists orders (
   subtotal_qr numeric(12,2) default 0,
   delivery_fee_qr numeric(12,2) default 0,
   express_fee_qr numeric(12,2) default 0,
+  cut_bend_fee_qr numeric(12,2) default 0,
   grand_total_qr numeric(12,2) default 0,
   created_at timestamptz default now()
 );
