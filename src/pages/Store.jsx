@@ -1,13 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import React, { useMemo, useRef, useState, useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
-import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
+import ManualOrderPanel from '@/components/store/ManualOrderPanel';
+import { fetchProductsWithVariants } from '@/services/productsService';
+import { fetchSettings } from '@/services/settingsService';
 import {
   Select,
   SelectContent,
@@ -17,11 +19,9 @@ import {
 } from "@/components/ui/select";
 import { 
   Search, 
-  Filter, 
   ShoppingCart,
   ArrowRight,
   Package,
-  Truck,
   Clock,
   X
 } from 'lucide-react';
@@ -37,45 +37,82 @@ const categories = [
 
 const diameters = [8, 10, 12, 14, 16, 18, 20, 22, 25, 32];
 
-// Sample products for display
-const sampleProducts = [
-  { id: '1', name: 'Straight Rebar 8mm', category: 'straight_bar', diameter: 8, price_per_ton: 2500, lead_time: '1-2 hours', material: 'B500B', in_stock: true, featured: true },
-  { id: '2', name: 'Straight Rebar 10mm', category: 'straight_bar', diameter: 10, price_per_ton: 2450, lead_time: '1-2 hours', material: 'B500B', in_stock: true, featured: true },
-  { id: '3', name: 'Straight Rebar 12mm', category: 'straight_bar', diameter: 12, price_per_ton: 2400, lead_time: '1-2 hours', material: 'B500B', in_stock: true, featured: true },
-  { id: '4', name: 'Straight Rebar 16mm', category: 'straight_bar', diameter: 16, price_per_ton: 2350, lead_time: '1-2 hours', material: 'B500B', in_stock: true, featured: false },
-  { id: '5', name: 'Straight Rebar 20mm', category: 'straight_bar', diameter: 20, price_per_ton: 2400, lead_time: '1-2 hours', material: 'B500B', in_stock: true, featured: false },
-  { id: '6', name: 'Straight Rebar 25mm', category: 'straight_bar', diameter: 25, price_per_ton: 2500, lead_time: '1-2 hours', material: 'B500B', in_stock: true, featured: false },
-  { id: '7', name: 'Straight Rebar 32mm', category: 'straight_bar', diameter: 32, price_per_ton: 2600, lead_time: '1-2 hours', material: 'B500B', in_stock: true, featured: false },
-  { id: '8', name: 'Cut & Bend - Stirrups', category: 'cut_bend', diameter: 10, price_per_ton: 3200, lead_time: '2-3 days', material: 'B500B', in_stock: true, featured: true },
-  { id: '9', name: 'Cut & Bend - L-Bars', category: 'cut_bend', diameter: 12, price_per_ton: 3100, lead_time: '2-3 days', material: 'B500B', in_stock: true, featured: false },
-  { id: '10', name: 'Welded Mesh Sheet 4x8', category: 'mesh', diameter: 8, price_per_piece: 150, lead_time: '1-2 days', material: 'B500B', in_stock: true, featured: true },
-  { id: '11', name: 'Welded Mesh Sheet 4x8', category: 'mesh', diameter: 10, price_per_piece: 200, lead_time: '1-2 days', material: 'B500B', in_stock: true, featured: false },
-  { id: '12', name: 'Binding Wire', category: 'accessories', price_per_ton: 3500, lead_time: 'Same day', material: 'Steel', in_stock: true, featured: false },
-  { id: '13', name: 'Concrete Spacers (100pcs)', category: 'accessories', price_per_piece: 50, lead_time: 'Same day', in_stock: true, featured: false },
-];
-
 export default function Store() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState(searchParams.get('category') || 'all');
-  const [selectedDiameter, setSelectedDiameter] = useState(searchParams.get('diameter') || 'all');
+  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [selectedDiameter, setSelectedDiameter] = useState('all');
+  const [manualOpen, setManualOpen] = useState(searchParams.get('mode') === 'manual');
+  const manualRef = useRef(null);
 
   const { data: products = [], isLoading } = useQuery({
     queryKey: ['products'],
-    queryFn: () => base44.entities.Product.list(),
+    queryFn: fetchProductsWithVariants,
     initialData: [],
   });
 
-  // Use database products only
-  const allProducts = products;
+  const { data: settings = {} } = useQuery({
+    queryKey: ['settings'],
+    queryFn: fetchSettings,
+    initialData: {},
+  });
 
-  // Filter products
-  const filteredProducts = allProducts.filter(product => {
+  useEffect(() => {
+    const mode = searchParams.get('mode');
+    if (mode === 'manual') {
+      setManualOpen(true);
+    } else {
+      setManualOpen(false);
+    }
+  }, [searchParams]);
+
+  useEffect(() => {
+    if (manualOpen && manualRef.current) {
+      manualRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }, [manualOpen]);
+
+  const displayProducts = useMemo(() => {
+    return products.flatMap((product) => {
+      const imageUrl = product.primary_image_url || product.product_images?.[0]?.image_url;
+      const variants = product.product_variants?.length ? product.product_variants : [null];
+      return variants.map((variant) => ({
+        id: variant ? `${product.id}-${variant.id}` : product.id,
+        productId: product.id,
+        variantId: variant?.id || null,
+        name: product.name,
+        category: product.category,
+        description: product.description,
+        diameter_mm: variant?.diameter_mm ?? null,
+        unit_type: variant?.unit_type ?? null,
+        price_qr: variant?.price_qr ?? null,
+        stock_qty: variant?.stock_qty ?? null,
+        grade: variant?.grade ?? 'B500B',
+        image_url: imageUrl,
+      }));
+    });
+  }, [products]);
+
+  const filteredProducts = displayProducts.filter((product) => {
     const matchesSearch = product.name?.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesCategory = selectedCategory === 'all' || product.category === selectedCategory;
-    const matchesDiameter = selectedDiameter === 'all' || product.diameter === parseInt(selectedDiameter);
+    const matchesDiameter =
+      selectedDiameter === 'all' || product.diameter_mm === parseInt(selectedDiameter, 10);
     return matchesSearch && matchesCategory && matchesDiameter;
   });
+
+  const openManualOrder = () => {
+    const nextParams = new URLSearchParams(searchParams);
+    nextParams.set('mode', 'manual');
+    setSearchParams(nextParams, { replace: true });
+  };
+
+  const closeManualOrder = () => {
+    const nextParams = new URLSearchParams(searchParams);
+    nextParams.delete('mode');
+    setSearchParams(nextParams, { replace: true });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   const clearFilters = () => {
     setSelectedCategory('all');
@@ -158,6 +195,13 @@ export default function Store() {
                 Clear
               </Button>
             )}
+
+            <Button
+              onClick={openManualOrder}
+              className="bg-[#7B1F32] hover:bg-[#5a1625] text-white rounded-xl"
+            >
+              Order Manually
+            </Button>
           </div>
         </div>
       </section>
@@ -246,15 +290,12 @@ export default function Store() {
                           )}
                         </div>
                       )}
-                      {product.featured && (
-                        <Badge className="absolute top-4 left-4 bg-[#7B1F32]">Featured</Badge>
-                      )}
                       <Badge 
                         className={`absolute top-4 right-4 ${
-                          product.in_stock ? 'bg-green-600' : 'bg-red-600'
+                          product.stock_qty === null || product.stock_qty > 0 ? 'bg-green-600' : 'bg-red-600'
                         }`}
                       >
-                        {product.in_stock ? 'In Stock' : 'Out of Stock'}
+                        {product.stock_qty === null || product.stock_qty > 0 ? 'In Stock' : 'Out of Stock'}
                       </Badge>
                     </div>
 
@@ -265,28 +306,24 @@ export default function Store() {
                       </h3>
                       
                       <div className="flex flex-wrap gap-2 mb-4">
-                        {product.diameter && (
+                        {product.diameter_mm && (
                           <Badge variant="outline" className="bg-[#7B1F32]/10 text-[#7B1F32] border-[#7B1F32]/20">
-                            Ø{product.diameter}mm
+                            Ø{product.diameter_mm}mm
                           </Badge>
                         )}
                         <Badge variant="outline" className="bg-[#1E3A5F]/10 text-[#1E3A5F] border-[#1E3A5F]/20">
-                          {product.material}
+                          {product.grade || 'B500B'}
                         </Badge>
                       </div>
 
                       {/* Price */}
                       <div className="mb-4">
-                        {product.price_per_ton && (
+                        {product.price_qr && (
                           <div className="text-2xl font-black text-[#7B1F32]">
-                            {product.price_per_ton.toLocaleString()} QAR
-                            <span className="text-sm font-normal text-gray-500">/ton</span>
-                          </div>
-                        )}
-                        {product.price_per_piece && !product.price_per_ton && (
-                          <div className="text-2xl font-black text-[#7B1F32]">
-                            {product.price_per_piece.toLocaleString()} QAR
-                            <span className="text-sm font-normal text-gray-500">/piece</span>
+                            {product.price_qr.toLocaleString()} QAR
+                            {product.unit_type && (
+                              <span className="text-sm font-normal text-gray-500">/{product.unit_type}</span>
+                            )}
                           </div>
                         )}
                       </div>
@@ -294,12 +331,12 @@ export default function Store() {
                       {/* Lead Time */}
                       <div className="flex items-center gap-2 text-sm text-gray-600 mb-6">
                         <Clock className="w-4 h-4" />
-                        <span>{product.lead_time}</span>
+                        <span>Standard lead time</span>
                       </div>
 
                       {/* Actions */}
                       <div className="flex gap-2">
-                        <Link to={createPageUrl('Order')} className="flex-1">
+                        <Link to={createPageUrl('/store?mode=manual')} className="flex-1">
                           <Button 
                             className="w-full bg-[#7B1F32] hover:bg-[#5a1625] text-white rounded-xl"
                           >
@@ -316,6 +353,12 @@ export default function Store() {
           )}
         </div>
       </section>
+
+      {manualOpen && (
+        <div ref={manualRef}>
+          <ManualOrderPanel settings={settings} onBackToStore={closeManualOrder} />
+        </div>
+      )}
 
       {/* CTA Banner */}
       <section className="py-16 bg-[#1A1A1A]">
