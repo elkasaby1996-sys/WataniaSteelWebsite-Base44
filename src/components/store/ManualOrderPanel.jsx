@@ -223,7 +223,7 @@ export default function ManualOrderPanel({ settings, products = [], onBackToStor
   return (
     <section className="py-16 bg-gray-50" id="manual-order-panel">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        <form onSubmit={handleSubmit} className="space-y-8">
+        <form onSubmit={handleSubmit}>
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-3xl font-bold text-gray-900">Place Your Order</h2>
@@ -554,6 +554,7 @@ export default function ManualOrderPanel({ settings, products = [], onBackToStor
                 'Submit Order'
               )}
             </Button>
+          </div>
           </div>
         </form>
       </div>
