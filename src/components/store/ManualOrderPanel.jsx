@@ -341,51 +341,66 @@ export default function ManualOrderPanel({ settings, products = [], onBackToStor
 
           </Tabs>
 
-          <div className="bg-white rounded-2xl shadow-lg p-8">
-            <h2 className="text-xl font-bold text-gray-900 mb-6">Customer Information</h2>
-            <div className="grid md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <Label>Full Name *</Label>
-                <Input
-                  placeholder="Your name"
-                  value={formData.customer_name}
-                  onChange={(e) => setFormData({ ...formData, customer_name: e.target.value })}
-                  className="py-3 rounded-xl"
-                  required
-                />
+            <div className="bg-white rounded-2xl shadow-lg p-8">
+              <h2 className="text-xl font-bold text-gray-900 mb-6">Delivery Options</h2>
+
+              <div className="grid md:grid-cols-3 gap-4 mb-6">
+                {deliveryOptions.map((option) => (
+                  <div
+                    key={option.value}
+                    onClick={() => setFormData({ ...formData, delivery_method: option.value })}
+                    className={`border-2 rounded-xl p-6 cursor-pointer transition-all ${
+                      formData.delivery_method === option.value
+                        ? 'border-[#7B1F32] bg-[#7B1F32]/5'
+                        : 'border-gray-200 hover:border-gray-300'
+                    }`}
+                  >
+                    <div className="font-bold text-gray-900">{option.label}</div>
+                    <div className="text-sm text-gray-500 mb-2">{option.description}</div>
+                    <div className="text-xl font-black text-[#7B1F32]">
+                      {option.price > 0 ? `${option.price} QAR` : 'Free'}
+                    </div>
+                  </div>
+                ))}
               </div>
-              <div className="space-y-2">
-                <Label>Phone Number *</Label>
-                <Input
-                  type="tel"
-                  placeholder="+974 XXXX XXXX"
-                  value={formData.customer_phone}
-                  onChange={(e) => setFormData({ ...formData, customer_phone: e.target.value })}
-                  className="py-3 rounded-xl"
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>Email</Label>
-                <Input
-                  type="email"
-                  placeholder="you@company.com"
-                  value={formData.customer_email}
-                  onChange={(e) => setFormData({ ...formData, customer_email: e.target.value })}
-                  className="py-3 rounded-xl"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>Company Name</Label>
-                <Input
-                  placeholder="Your company"
-                  value={formData.company_name}
-                  onChange={(e) => setFormData({ ...formData, company_name: e.target.value })}
-                  className="py-3 rounded-xl"
-                />
+
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label>Delivery Address</Label>
+                  <Textarea
+                    placeholder="Full delivery address"
+                    value={formData.delivery_address}
+                    onChange={(e) => setFormData({ ...formData, delivery_address: e.target.value })}
+                    className="rounded-xl"
+                  />
+                </div>
+                <div className="grid md:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <Label>Preferred Delivery Date</Label>
+                    <Input
+                      type="date"
+                      value={formData.delivery_date}
+                      onChange={(e) => setFormData({ ...formData, delivery_date: e.target.value })}
+                      className="py-3 rounded-xl"
+                    />
+                  </div>
+                  <div className="flex items-center justify-between bg-amber-50 border border-amber-200 rounded-xl p-6">
+                    <div className="flex items-center gap-3">
+                      <Zap className="w-6 h-6 text-amber-600" />
+                      <div>
+                        <div className="font-bold text-gray-900">Express Order</div>
+                        <div className="text-sm text-gray-600">Priority processing (+{expressFeeValue} QAR)</div>
+                      </div>
+                    </div>
+                    <Switch
+                      checked={formData.is_express}
+                      onCheckedChange={(checked) => setFormData({ ...formData, is_express: checked })}
+                      disabled={!settings?.express_fee?.enabled}
+                    />
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
 
           <div className="bg-white rounded-2xl shadow-lg p-8">
             <h2 className="text-xl font-bold text-gray-900 mb-6">Apply BOQ (Optional)</h2>
@@ -416,143 +431,89 @@ export default function ManualOrderPanel({ settings, products = [], onBackToStor
             <div className="grid md:grid-cols-3 gap-4 mb-6">
               {deliveryOptions.map((option) => (
                 <div
-                  key={option.value}
-                  onClick={() => setFormData({ ...formData, delivery_method: option.value })}
+                  onClick={() => setFormData({ ...formData, payment_method: 'cod' })}
                   className={`border-2 rounded-xl p-6 cursor-pointer transition-all ${
-                    formData.delivery_method === option.value
+                    formData.payment_method === 'cod'
                       ? 'border-[#7B1F32] bg-[#7B1F32]/5'
                       : 'border-gray-200 hover:border-gray-300'
                   }`}
                 >
-                  <div className="font-bold text-gray-900">{option.label}</div>
-                  <div className="text-sm text-gray-500 mb-2">{option.description}</div>
-                  <div className="text-xl font-black text-[#7B1F32]">
-                    {option.price > 0 ? `${option.price} QAR` : 'Free'}
-                  </div>
+                  <div className="font-bold text-gray-900">Cash on Delivery</div>
+                  <div className="text-sm text-gray-500">Pay when you receive the order</div>
                 </div>
-              ))}
+                <div
+                  onClick={() => setFormData({ ...formData, payment_method: 'bank_transfer' })}
+                  className={`border-2 rounded-xl p-6 cursor-pointer transition-all ${
+                    formData.payment_method === 'bank_transfer'
+                      ? 'border-[#7B1F32] bg-[#7B1F32]/5'
+                      : 'border-gray-200 hover:border-gray-300'
+                  }`}
+                >
+                  <div className="font-bold text-gray-900">Bank Transfer</div>
+                  <div className="text-sm text-gray-500">Transfer before delivery</div>
+                </div>
+              </div>
             </div>
 
-            <div className="space-y-4">
+            <div className="bg-white rounded-2xl shadow-lg p-8">
               <div className="space-y-2">
-                <Label>Delivery Address</Label>
+                <Label>Additional Notes</Label>
                 <Textarea
-                  placeholder="Full delivery address"
-                  value={formData.delivery_address}
-                  onChange={(e) => setFormData({ ...formData, delivery_address: e.target.value })}
+                  placeholder="Any special instructions or requirements..."
+                  value={formData.notes}
+                  onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
                   className="rounded-xl"
                 />
               </div>
-              <div className="grid md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <Label>Preferred Delivery Date</Label>
-                  <Input
-                    type="date"
-                    value={formData.delivery_date}
-                    onChange={(e) => setFormData({ ...formData, delivery_date: e.target.value })}
-                    className="py-3 rounded-xl"
-                  />
-                </div>
-                <div className="flex items-center justify-between bg-amber-50 border border-amber-200 rounded-xl p-6">
-                  <div className="flex items-center gap-3">
-                    <Zap className="w-6 h-6 text-amber-600" />
-                    <div>
-                      <div className="font-bold text-gray-900">Express Order</div>
-                      <div className="text-sm text-gray-600">Priority processing (+{expressFeeValue} QAR)</div>
-                    </div>
-                  </div>
-                  <Switch
-                    checked={formData.is_express}
-                    onCheckedChange={(checked) => setFormData({ ...formData, is_express: checked })}
-                    disabled={!settings?.express_fee?.enabled}
-                  />
-                </div>
-              </div>
             </div>
-          </div>
 
-          <div className="bg-white rounded-2xl shadow-lg p-8">
-            <h2 className="text-xl font-bold text-gray-900 mb-6">Payment Method</h2>
-            <div className="grid md:grid-cols-2 gap-4">
-              <div
-                onClick={() => setFormData({ ...formData, payment_method: 'cod' })}
-                className={`border-2 rounded-xl p-6 cursor-pointer transition-all ${
-                  formData.payment_method === 'cod'
-                    ? 'border-[#7B1F32] bg-[#7B1F32]/5'
-                    : 'border-gray-200 hover:border-gray-300'
-                }`}
-              >
-                <div className="font-bold text-gray-900">Cash on Delivery</div>
-                <div className="text-sm text-gray-500">Pay when you receive the order</div>
-              </div>
-              <div
-                onClick={() => setFormData({ ...formData, payment_method: 'bank_transfer' })}
-                className={`border-2 rounded-xl p-6 cursor-pointer transition-all ${
-                  formData.payment_method === 'bank_transfer'
-                    ? 'border-[#7B1F32] bg-[#7B1F32]/5'
-                    : 'border-gray-200 hover:border-gray-300'
-                }`}
-              >
-                <div className="font-bold text-gray-900">Bank Transfer</div>
-                <div className="text-sm text-gray-500">Transfer before delivery</div>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-2xl shadow-lg p-8">
-            <div className="space-y-2">
-              <Label>Additional Notes</Label>
-              <Textarea
-                placeholder="Any special instructions or requirements..."
-                value={formData.notes}
-                onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                className="rounded-xl"
-              />
-            </div>
-          </div>
-
-          <div className="bg-[#1A1A1A] rounded-2xl p-8 text-white">
-            <h2 className="text-xl font-bold mb-6">Order Summary</h2>
-            <div className="space-y-4 mb-8">
-              <div className="flex justify-between">
-                <span className="text-gray-400">Total Weight</span>
-                <span className="font-bold">{(totalWeight / 1000).toFixed(2)} tons</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-400">Delivery Fee</span>
-                <span className="font-bold">{deliveryFee} QAR</span>
-              </div>
-              {formData.is_express && (
-                <div className="flex justify-between text-amber-400">
-                  <span>Express Fee</span>
-                  <span className="font-bold">{expressFee} QAR</span>
-                </div>
-              )}
-              {hasCutAndBend && (
+            <div className="bg-[#1A1A1A] rounded-2xl p-8 text-white">
+              <h2 className="text-xl font-bold mb-6">Order Summary</h2>
+              <div className="space-y-4 mb-8">
                 <div className="flex justify-between">
-                  <span className="text-gray-400">Cut-and-Bend Fee</span>
-                  <span className="font-bold">{cutAndBendFee} QAR</span>
+                  <span className="text-gray-400">Total Weight</span>
+                  <span className="font-bold">{(totalWeight / 1000).toFixed(2)} tons</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-400">Delivery Fee</span>
+                  <span className="font-bold">{deliveryFee} QAR</span>
+                </div>
+                {formData.is_express && (
+                  <div className="flex justify-between text-amber-400">
+                    <span>Express Fee</span>
+                    <span className="font-bold">{expressFee} QAR</span>
+                  </div>
+                )}
+                {hasCutAndBend && (
+                  <div className="flex justify-between">
+                    <span className="text-gray-400">Cut-and-Bend Fee</span>
+                    <span className="font-bold">{cutAndBendFee} QAR</span>
+                  </div>
+                )}
+                <div className="border-t border-white/20 pt-4 flex justify-between text-xl">
+                  <span>Order Total</span>
+                  <span className="font-black text-[#7B1F32]">{orderTotal.toFixed(2)} QAR</span>
                 </div>
               )}
               <div className="border-t border-white/20 pt-4 flex justify-between text-xl">
                 <span>Order Total</span>
                 <span className="font-black text-[#7B1F32]">{orderTotal.toFixed(2)} QAR</span>
               </div>
+              <Button
+                type="submit"
+                disabled={submitting}
+                className="w-full bg-[#7B1F32] hover:bg-[#5a1625] text-white py-6 text-lg font-semibold rounded-xl"
+              >
+                {submitting ? (
+                  <>
+                    <Loader2 className="mr-2 w-5 h-5 animate-spin" />
+                    Submitting Order...
+                  </>
+                ) : (
+                  'Submit Order'
+                )}
+              </Button>
             </div>
-            <Button
-              type="submit"
-              disabled={submitting}
-              className="w-full bg-[#7B1F32] hover:bg-[#5a1625] text-white py-6 text-lg font-semibold rounded-xl"
-            >
-              {submitting ? (
-                <>
-                  <Loader2 className="mr-2 w-5 h-5 animate-spin" />
-                  Submitting Order...
-                </>
-              ) : (
-                'Submit Order'
-              )}
-            </Button>
           </div>
           </div>
         </form>
