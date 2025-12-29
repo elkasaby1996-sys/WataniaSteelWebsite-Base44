@@ -1,45 +1,12 @@
 import React from 'react';
-import { Factory, ShieldCheck, Award, Clock, Wrench } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { capabilities } from '@/components/sections/CapabilitiesStrip';
 
-export const capabilities = [
-  {
-    icon: Factory,
-    title: '700 Tons/Day',
-    subtitle: 'Production Capacity',
-    color: 'bg-[#7B1F32]'
-  },
-  {
-    icon: ShieldCheck,
-    title: 'Ashghal Approved',
-    subtitle: 'Certified Vendor',
-    color: 'bg-[#1E3A5F]'
-  },
-  {
-    icon: Award,
-    title: 'ISO Certified',
-    subtitle: '9001 • 14001 • 45001',
-    color: 'bg-[#7B1F32]'
-  },
-  {
-    icon: Clock,
-    title: '1–2 Hour Delivery',
-    subtitle: 'Straight Bar Supply',
-    color: 'bg-[#1E3A5F]'
-  },
-  {
-    icon: Wrench,
-    title: 'Custom Fabrication',
-    subtitle: 'Any Shape Available',
-    color: 'bg-[#7B1F32]'
-  }
-];
-
-export default function CapabilitiesStrip() {
+export default function CapabilitiesHighlight() {
   return (
-    <section className="relative -mt-16 z-20 px-4 sm:px-6 lg:px-8">
+    <section className="bg-[#1A1A1A] py-16 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
-        <div className="bg-white rounded-2xl shadow-2xl shadow-gray-200/50 border border-gray-100 overflow-hidden">
+        <div className="bg-white rounded-2xl shadow-2xl shadow-gray-900/30 border border-gray-100 overflow-hidden">
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
             {capabilities.map((cap, index) => (
               <motion.div
