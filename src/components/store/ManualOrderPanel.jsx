@@ -5,7 +5,6 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Select,
   SelectContent,
@@ -18,9 +17,8 @@ import {
   Loader2,
   Plus,
   Trash2,
-  Calculator,
-  Truck,
-  Zap
+  Upload,
+  Zap,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { createManualOrder } from '@/services/ordersService';
@@ -163,10 +161,10 @@ export default function ManualOrderPanel({ settings, products = [], onBackToStor
     event.preventDefault();
     setSubmitting(true);
     try {
-      const order = await createManualOrder({
+      const result = await createManualOrder({
         formData,
         items: itemsWithWeight,
-        orderType,
+        orderType: 'manual',
         deliveryFee,
         expressFee,
         cutAndBendFee,
@@ -174,8 +172,11 @@ export default function ManualOrderPanel({ settings, products = [], onBackToStor
         boqFile,
       });
       setSubmitted(true);
-      setOrderNumber(order.order_number);
+      setOrderNumber(result.order.order_number);
       toast.success('Order submitted successfully!');
+      if (result.boqUploadError) {
+        toast.warning(result.boqUploadError);
+      }
     } catch (error) {
       toast.error(error.message || 'Failed to submit order');
     } finally {
@@ -318,28 +319,26 @@ export default function ManualOrderPanel({ settings, products = [], onBackToStor
                         variant="outline"
                         onClick={() => removeItem(index)}
                         className="py-3 rounded-xl"
-                        disabled={items.length === 1}
-                      >
-                      <Trash2 className="w-5 h-5" />
-                    </Button>
+                      />
                   </div>
-                </div>
-              ))}
-
-              <div className="flex justify-between items-center">
-                <Button type="button" variant="outline" onClick={addItem} className="rounded-xl">
-                  <Plus className="w-4 h-4 mr-2" />
-                  Add Item
-                </Button>
-                <div className="text-right">
-                  <div className="text-sm text-gray-500">Total Weight</div>
-                  <div className="text-2xl font-black text-[#7B1F32]">{totalWeight.toFixed(2)} kg</div>
-                  <p className="text-xs text-gray-500 mt-2">
-                    Note: For all bars less than 12 Meters, a cut-and-bend fee will be added.
-                  </p>
+                  <div className="space-y-2">
+                    <Label>Weight (kg)</Label>
+                    <div className="bg-[#7B1F32]/10 text-[#7B1F32] font-bold py-3 px-4 rounded-xl text-center">
+                      {item.weightKg.toFixed(2)} kg
+                    </div>
+                  </div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => removeItem(index)}
+                      className="py-3 rounded-xl"
+                      disabled={items.length === 1}
+                    >
+                    <Trash2 className="w-5 h-5" />
+                  </Button>
                 </div>
               </div>
-            </TabsContent>
+            ))}
 
           </Tabs>
 
