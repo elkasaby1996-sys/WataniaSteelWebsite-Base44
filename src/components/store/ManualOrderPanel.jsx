@@ -39,7 +39,7 @@ const defaultDeliveryOptions = [
 ];
 
 export default function ManualOrderPanel({ settings, products = [], onBackToStore }) {
-  const [orderType, setOrderType] = useState('manual');
+  const [orderType, setOrderType] = useState('straight');
   const [items, setItems] = useState([
     { diameter: 12, length: 12, quantity: 100, shape: '', unit: 'pieces' },
   ]);
@@ -115,7 +115,7 @@ export default function ManualOrderPanel({ settings, products = [], onBackToStor
     weightKg: calculateWeight(item),
   }));
 
-  const activeItems = itemsWithWeight;
+  const activeItems = orderType === 'upload' ? [] : itemsWithWeight;
   const totalWeight = activeItems.reduce((sum, item) => sum + item.weightKg, 0);
   const deliveryFee = deliveryOptions.find((d) => d.value === formData.delivery_method)?.price || 0;
   const expressFee = formData.is_express ? expressFeeValue : 0;
@@ -126,9 +126,6 @@ export default function ManualOrderPanel({ settings, products = [], onBackToStor
 
   const priceUnitMultiplier = (unitType, item) => {
     const normalized = unitType?.toLowerCase() ?? '';
-    if (!normalized) {
-      return item.weightKg > 0 ? item.weightKg / 1000 : item.quantity;
-    }
     if (normalized.includes('ton')) {
       return item.weightKg / 1000;
     }
@@ -144,7 +141,7 @@ export default function ManualOrderPanel({ settings, products = [], onBackToStor
     return item.weightKg || item.quantity;
   };
 
-  const productTotals = activeItems.map((item) => {
+  const productTotals = itemsWithWeight.map((item) => {
     const productByName = products.find((product) => product.name === item.shape);
     const productByDiameter = products.find((product) =>
       product.product_variants?.some((variant) => variant.diameter_mm === item.diameter)
@@ -237,7 +234,11 @@ export default function ManualOrderPanel({ settings, products = [], onBackToStor
           </div>
 
           <Tabs value={orderType} onValueChange={setOrderType} className="bg-white rounded-2xl shadow-lg p-8">
-            <TabsList className="grid grid-cols-1 mb-8 bg-transparent p-0 h-auto">
+            <TabsList className="grid grid-cols-3 mb-8 bg-transparent p-0 h-auto">
+              <TabsTrigger value="straight" className="py-4">
+                <Truck className="w-4 h-4 mr-2" />
+                Straight Bars
+              </TabsTrigger>
               <TabsTrigger value="manual" className="py-4">
                 <Calculator className="w-4 h-4 mr-2" />
                 Manual Entry
