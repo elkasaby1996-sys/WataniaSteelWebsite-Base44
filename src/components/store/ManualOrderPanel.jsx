@@ -127,9 +127,6 @@ export default function ManualOrderPanel({ settings, products = [], onBackToStor
 
   const priceUnitMultiplier = (unitType, item) => {
     const normalized = unitType?.toLowerCase() ?? '';
-    if (!normalized) {
-      return item.weightKg > 0 ? item.weightKg / 1000 : item.quantity;
-    }
     if (normalized.includes('ton')) {
       return item.weightKg / 1000;
     }
@@ -145,7 +142,7 @@ export default function ManualOrderPanel({ settings, products = [], onBackToStor
     return item.weightKg || item.quantity;
   };
 
-  const productTotals = activeItems.map((item) => {
+  const productTotals = itemsWithWeight.map((item) => {
     const productByName = products.find((product) => product.name === item.shape);
     const productByDiameter = products.find((product) =>
       product.product_variants?.some((variant) => variant.diameter_mm === item.diameter)
