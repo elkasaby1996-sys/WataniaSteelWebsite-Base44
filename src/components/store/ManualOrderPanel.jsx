@@ -116,11 +116,12 @@ export default function ManualOrderPanel({ settings, products = [], onBackToStor
     weightKg: calculateWeight(item),
   }));
 
-  const totalWeight = itemsWithWeight.reduce((sum, item) => sum + item.weightKg, 0);
+  const activeItems = orderType === 'upload' ? [] : itemsWithWeight;
+  const totalWeight = activeItems.reduce((sum, item) => sum + item.weightKg, 0);
   const deliveryFee = deliveryOptions.find((d) => d.value === formData.delivery_method)?.price || 0;
   const expressFee = formData.is_express ? expressFeeValue : 0;
   const cutAndBendFeeValue = settings?.cut_bend_fee?.fee ?? 0;
-  const hasCutAndBend = itemsWithWeight.some((item) => Number(item.length) > 0 && item.length < 12);
+  const hasCutAndBend = activeItems.some((item) => Number(item.length) > 0 && item.length < 12);
   const cutAndBendFee = hasCutAndBend ? cutAndBendFeeValue : 0;
   const additionalFeesTotal = deliveryFee + expressFee + cutAndBendFee;
 
@@ -144,7 +145,7 @@ export default function ManualOrderPanel({ settings, products = [], onBackToStor
     return item.weightKg || item.quantity;
   };
 
-  const productTotals = itemsWithWeight.map((item) => {
+  const productTotals = activeItems.map((item) => {
     const productByName = products.find((product) => product.name === item.shape);
     const productByDiameter = products.find((product) =>
       product.product_variants?.some((variant) => variant.diameter_mm === item.diameter)
