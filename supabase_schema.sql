@@ -119,6 +119,11 @@ on products
 for select
 using (active = true);
 
+create policy "Users read own profile"
+on profiles
+for select
+using (auth.uid() = id);
+
 create policy "Public read active variants"
 on product_variants
 for select
