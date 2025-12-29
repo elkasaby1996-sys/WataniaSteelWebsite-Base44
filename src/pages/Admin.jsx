@@ -325,6 +325,7 @@ export default function Admin() {
       await Promise.all([
         upsertSetting('delivery_fees', settings.delivery_fees || {}),
         upsertSetting('express_fee', settings.express_fee || {}),
+        upsertSetting('cut_bend_fee', settings.cut_bend_fee || {}),
       ]);
       toast.success('Settings updated');
     } catch (error) {
@@ -745,6 +746,24 @@ export default function Admin() {
                           ...settings,
                           express_fee: {
                             ...(settings.express_fee || {}),
+                            fee: Number(event.target.value),
+                          },
+                        })
+                      }
+                    />
+                  </div>
+                </div>
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Cut-and-Bend Fee (QAR)</Label>
+                    <Input
+                      type="number"
+                      value={settings.cut_bend_fee?.fee ?? ''}
+                      onChange={(event) =>
+                        setSettings({
+                          ...settings,
+                          cut_bend_fee: {
+                            ...(settings.cut_bend_fee || {}),
                             fee: Number(event.target.value),
                           },
                         })
