@@ -3,7 +3,7 @@ import { cn } from '@/utils';
 
 const variantClasses = {
   default: 'bg-[#7B1F32] text-white hover:bg-[#5a1625]',
-  outline: 'border border-black bg-white text-[rgb(105,26,42)] hover:bg-gray-100',
+  outline: 'border border-black bg-white text-[#691A2A] hover:bg-gray-100',
   ghost: 'bg-transparent text-gray-700 hover:bg-gray-100',
 };
 
