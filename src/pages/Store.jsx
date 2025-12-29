@@ -114,13 +114,13 @@ export default function Store() {
                 placeholder="Search products..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-12 py-6 text-lg rounded-xl border-gray-200"
+                className="pl-12 py-3 text-lg rounded-xl border-gray-200"
               />
             </div>
 
             {/* Category Filter */}
             <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-              <SelectTrigger className="w-full lg:w-48 py-6 rounded-xl">
+              <SelectTrigger className="w-full lg:w-48 py-3 rounded-xl">
                 <SelectValue placeholder="Category" />
               </SelectTrigger>
               <SelectContent>
@@ -134,7 +134,7 @@ export default function Store() {
 
             {/* Diameter Filter */}
             <Select value={selectedDiameter} onValueChange={setSelectedDiameter}>
-              <SelectTrigger className="w-full lg:w-48 py-6 rounded-xl">
+              <SelectTrigger className="w-full lg:w-48 py-3 rounded-xl">
                 <SelectValue placeholder="Diameter" />
               </SelectTrigger>
               <SelectContent>
