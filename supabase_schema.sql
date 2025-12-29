@@ -31,7 +31,7 @@ create table if not exists product_images (
 create table if not exists product_variants (
   id uuid primary key default gen_random_uuid(),
   product_id uuid references products(id) on delete cascade,
-  diameter_mm numeric(6,2),
+  diameter_mm int,
   length_m numeric(8,2),
   grade text,
   unit_type text check (unit_type in ('ton','piece','bundle','sheet')) not null,
@@ -182,29 +182,6 @@ with check (exists (
 
 create policy "Admin manage settings"
 on settings
-for all
-using (exists (
-  select 1 from profiles
-  where profiles.id = auth.uid() and profiles.role = 'admin'
-))
-with check (exists (
-  select 1 from profiles
-  where profiles.id = auth.uid() and profiles.role = 'admin'
-));
-
-create policy "Users can view own profile"
-on profiles
-for select
-using (id = auth.uid());
-
-create policy "Users can update own profile"
-on profiles
-for update
-using (id = auth.uid())
-with check (id = auth.uid());
-
-create policy "Admin manage profiles"
-on profiles
 for all
 using (exists (
   select 1 from profiles
