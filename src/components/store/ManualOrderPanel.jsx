@@ -14,7 +14,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { 
-  Upload, 
   CheckCircle2, 
   Loader2,
   Plus,
@@ -244,86 +243,7 @@ export default function ManualOrderPanel({ settings, products = [], onBackToStor
                 <Calculator className="w-4 h-4 mr-2" />
                 Manual Entry
               </TabsTrigger>
-              <TabsTrigger value="upload" className="py-4">
-                <Upload className="w-4 h-4 mr-2" />
-                Upload BOQ
-              </TabsTrigger>
             </TabsList>
-
-            <TabsContent value="straight" className="space-y-6">
-              <h3 className="text-lg font-bold text-gray-900">Order Straight Bars by Diameter</h3>
-              
-              {itemsWithWeight.map((item, index) => (
-                <div key={index} className="bg-gray-50 rounded-xl p-6">
-                  <div className="grid md:grid-cols-5 gap-4 items-end">
-                    <div className="space-y-2">
-                      <Label>Diameter</Label>
-                      <Select 
-                        value={item.diameter.toString()} 
-                        onValueChange={(v) => updateItem(index, 'diameter', parseInt(v, 10))}
-                      >
-                        <SelectTrigger className="py-3 rounded-xl">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {diameters.map((d) => (
-                            <SelectItem key={d} value={d.toString()}>{d}mm</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Length (m)</Label>
-                        <Input
-                          type="number"
-                          value={item.length}
-                          onChange={(e) => updateItem(index, 'length', parseFloat(e.target.value))}
-                          className="py-3 rounded-xl"
-                        />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Quantity</Label>
-                        <Input
-                          type="number"
-                          value={item.quantity}
-                          onChange={(e) => updateItem(index, 'quantity', parseInt(e.target.value, 10))}
-                          className="py-3 rounded-xl"
-                        />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Weight (kg)</Label>
-                      <div className="bg-[#7B1F32]/10 text-[#7B1F32] font-bold py-3 px-4 rounded-xl text-center">
-                        {item.weightKg.toFixed(2)} kg
-                      </div>
-                    </div>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={() => removeItem(index)}
-                        className="py-3 rounded-xl"
-                        disabled={items.length === 1}
-                      >
-                      <Trash2 className="w-5 h-5" />
-                    </Button>
-                  </div>
-                </div>
-              ))}
-
-              <div className="flex justify-between items-center">
-                <Button type="button" variant="outline" onClick={addItem} className="rounded-xl">
-                  <Plus className="w-4 h-4 mr-2" />
-                  Add Item
-                </Button>
-                <div className="text-right">
-                  <div className="text-sm text-gray-500">Total Weight</div>
-                  <div className="text-2xl font-black text-[#7B1F32]">{totalWeight.toFixed(2)} kg</div>
-                  <div className="text-sm text-gray-500">({(totalWeight / 1000).toFixed(2)} tons)</div>
-                  <p className="text-xs text-gray-500 mt-2">
-                    Note: For all bars less than 12 Meters, a cut-and-bend fee will be added.
-                  </p>
-                </div>
-              </div>
-            </TabsContent>
 
             <TabsContent value="manual" className="space-y-6">
               <h3 className="text-lg font-bold text-gray-900">Enter Shapes Manually</h3>
@@ -421,29 +341,6 @@ export default function ManualOrderPanel({ settings, products = [], onBackToStor
               </div>
             </TabsContent>
 
-            <TabsContent value="upload" className="space-y-6">
-              <h3 className="text-lg font-bold text-gray-900">Upload BOQ / BBS Document</h3>
-              
-              <div 
-                className="border-2 border-dashed border-gray-300 rounded-2xl p-8 text-center hover:border-[#7B1F32] transition-colors cursor-pointer"
-                onClick={() => document.getElementById('boq-upload').click()}
-              >
-                <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-700 font-medium mb-2">
-                  {boqFile ? boqFile.name : 'Click to upload BOQ / BBS file'}
-                </p>
-                <p className="text-gray-500 text-sm">
-                  PDF, Excel, or Image files accepted
-                </p>
-                <input
-                  id="boq-upload"
-                  type="file"
-                  accept=".pdf,.xls,.xlsx,.jpg,.jpeg,.png"
-                  onChange={(e) => setBoqFile(e.target.files[0])}
-                  className="hidden"
-                />
-              </div>
-            </TabsContent>
           </Tabs>
 
           <div className="bg-white rounded-2xl shadow-lg p-8">
@@ -489,6 +386,29 @@ export default function ManualOrderPanel({ settings, products = [], onBackToStor
                   className="py-3 rounded-xl"
                 />
               </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-2xl shadow-lg p-8">
+            <h2 className="text-xl font-bold text-gray-900 mb-6">Apply BOQ (Optional)</h2>
+            <div
+              className="border-2 border-dashed border-gray-300 rounded-2xl p-8 text-center hover:border-[#7B1F32] transition-colors cursor-pointer"
+              onClick={() => document.getElementById('boq-upload').click()}
+            >
+              <Truck className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+              <p className="text-gray-700 font-medium mb-2">
+                {boqFile ? boqFile.name : 'Click to upload BOQ file'}
+              </p>
+              <p className="text-gray-500 text-sm">
+                Any file format accepted
+              </p>
+              <input
+                id="boq-upload"
+                type="file"
+                accept="*"
+                onChange={(e) => setBoqFile(e.target.files[0])}
+                className="hidden"
+              />
             </div>
           </div>
 
