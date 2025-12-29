@@ -229,10 +229,6 @@ export default function ManualOrderPanel({ settings, products = [], onBackToStor
               <h2 className="text-3xl font-bold text-gray-900">Place Your Order</h2>
               <p className="text-gray-600 mt-2">Choose your ordering method and submit your requirements directly.</p>
             </div>
-            <Button type="button" variant="outline" onClick={onBackToStore} className="rounded-xl">
-              Back to Store
-            </Button>
-          </div>
 
           <Tabs value={orderType} onValueChange={setOrderType} className="bg-white rounded-2xl shadow-lg p-8">
             <TabsList className="grid grid-cols-3 mb-8 bg-transparent p-0 h-auto">
