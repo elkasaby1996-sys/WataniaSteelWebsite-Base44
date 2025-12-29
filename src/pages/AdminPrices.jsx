@@ -148,7 +148,7 @@ export default function AdminPrices() {
               placeholder="Password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="py-6 rounded-xl"
+              className="py-3 rounded-xl"
               autoFocus
             />
             <Button type="submit" className="w-full bg-[#7B1F32] hover:bg-[#5a1625] py-6 rounded-xl">
@@ -212,11 +212,11 @@ export default function AdminPrices() {
                   placeholder="Search products..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-12 py-6 rounded-xl"
+                  className="pl-12 py-3 rounded-xl"
                 />
               </div>
               <Select value={filterCategory} onValueChange={setFilterCategory}>
-                <SelectTrigger className="w-full md:w-64 py-6 rounded-xl">
+                <SelectTrigger className="w-full md:w-64 py-3 rounded-xl">
                   <SelectValue placeholder="Filter by category" />
                 </SelectTrigger>
                 <SelectContent>
@@ -231,7 +231,7 @@ export default function AdminPrices() {
           ) : (
             <div>
               <Select value={orderFilter} onValueChange={setOrderFilter}>
-                <SelectTrigger className="w-full md:w-64 py-6 rounded-xl">
+                <SelectTrigger className="w-full md:w-64 py-3 rounded-xl">
                   <SelectValue placeholder="Filter by status" />
                 </SelectTrigger>
                 <SelectContent>

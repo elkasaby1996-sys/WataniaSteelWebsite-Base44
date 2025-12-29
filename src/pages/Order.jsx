@@ -217,7 +217,7 @@ export default function Order() {
                           value={item.diameter.toString()} 
                           onValueChange={(v) => updateItem(index, 'diameter', parseInt(v))}
                         >
-                          <SelectTrigger className="py-6 rounded-xl">
+                          <SelectTrigger className="py-3 rounded-xl">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
@@ -229,21 +229,21 @@ export default function Order() {
                       </div>
                       <div className="space-y-2">
                         <Label>Length (m)</Label>
-                        <Input
-                          type="number"
-                          value={item.length}
-                          onChange={(e) => updateItem(index, 'length', parseFloat(e.target.value))}
-                          className="py-6 rounded-xl"
-                        />
+                          <Input
+                            type="number"
+                            value={item.length}
+                            onChange={(e) => updateItem(index, 'length', parseFloat(e.target.value))}
+                            className="py-3 rounded-xl"
+                          />
                       </div>
                       <div className="space-y-2">
                         <Label>Quantity</Label>
-                        <Input
-                          type="number"
-                          value={item.quantity}
-                          onChange={(e) => updateItem(index, 'quantity', parseInt(e.target.value))}
-                          className="py-6 rounded-xl"
-                        />
+                          <Input
+                            type="number"
+                            value={item.quantity}
+                            onChange={(e) => updateItem(index, 'quantity', parseInt(e.target.value))}
+                            className="py-3 rounded-xl"
+                          />
                       </div>
                       <div className="space-y-2">
                         <Label>Weight (kg)</Label>
@@ -251,13 +251,13 @@ export default function Order() {
                           {calculateWeight(item)} kg
                         </div>
                       </div>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={() => removeItem(index)}
-                        className="py-6 rounded-xl"
-                        disabled={items.length === 1}
-                      >
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => removeItem(index)}
+                          className="py-3 rounded-xl"
+                          disabled={items.length === 1}
+                        >
                         <Trash2 className="w-5 h-5" />
                       </Button>
                     </div>
@@ -290,7 +290,7 @@ export default function Order() {
                           value={item.shape} 
                           onValueChange={(v) => updateItem(index, 'shape', v)}
                         >
-                          <SelectTrigger className="py-6 rounded-xl">
+                          <SelectTrigger className="py-3 rounded-xl">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
@@ -306,7 +306,7 @@ export default function Order() {
                           value={item.diameter.toString()} 
                           onValueChange={(v) => updateItem(index, 'diameter', parseInt(v))}
                         >
-                          <SelectTrigger className="py-6 rounded-xl">
+                          <SelectTrigger className="py-3 rounded-xl">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
@@ -318,21 +318,21 @@ export default function Order() {
                       </div>
                       <div className="space-y-2">
                         <Label>Length (m)</Label>
-                        <Input
-                          type="number"
-                          value={item.length}
-                          onChange={(e) => updateItem(index, 'length', parseFloat(e.target.value))}
-                          className="py-6 rounded-xl"
-                        />
+                          <Input
+                            type="number"
+                            value={item.length}
+                            onChange={(e) => updateItem(index, 'length', parseFloat(e.target.value))}
+                            className="py-3 rounded-xl"
+                          />
                       </div>
                       <div className="space-y-2">
                         <Label>Quantity</Label>
-                        <Input
-                          type="number"
-                          value={item.quantity}
-                          onChange={(e) => updateItem(index, 'quantity', parseInt(e.target.value))}
-                          className="py-6 rounded-xl"
-                        />
+                          <Input
+                            type="number"
+                            value={item.quantity}
+                            onChange={(e) => updateItem(index, 'quantity', parseInt(e.target.value))}
+                            className="py-3 rounded-xl"
+                          />
                       </div>
                       <div className="space-y-2">
                         <Label>Weight (kg)</Label>
@@ -340,13 +340,13 @@ export default function Order() {
                           {calculateWeight(item)} kg
                         </div>
                       </div>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={() => removeItem(index)}
-                        className="py-6 rounded-xl"
-                        disabled={items.length === 1}
-                      >
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => removeItem(index)}
+                          className="py-3 rounded-xl"
+                          disabled={items.length === 1}
+                        >
                         <Trash2 className="w-5 h-5" />
                       </Button>
                     </div>
@@ -401,7 +401,7 @@ export default function Order() {
                     placeholder="Your name"
                     value={formData.customer_name}
                     onChange={(e) => setFormData({ ...formData, customer_name: e.target.value })}
-                    className="py-6 rounded-xl"
+                    className="py-3 rounded-xl"
                     required
                   />
                 </div>
@@ -412,7 +412,7 @@ export default function Order() {
                     placeholder="+974 XXXX XXXX"
                     value={formData.customer_phone}
                     onChange={(e) => setFormData({ ...formData, customer_phone: e.target.value })}
-                    className="py-6 rounded-xl"
+                    className="py-3 rounded-xl"
                     required
                   />
                 </div>
@@ -423,7 +423,7 @@ export default function Order() {
                     placeholder="you@company.com"
                     value={formData.customer_email}
                     onChange={(e) => setFormData({ ...formData, customer_email: e.target.value })}
-                    className="py-6 rounded-xl"
+                    className="py-3 rounded-xl"
                   />
                 </div>
                 <div className="space-y-2">
@@ -432,7 +432,7 @@ export default function Order() {
                     placeholder="Your company"
                     value={formData.company_name}
                     onChange={(e) => setFormData({ ...formData, company_name: e.target.value })}
-                    className="py-6 rounded-xl"
+                    className="py-3 rounded-xl"
                   />
                 </div>
               </div>
@@ -479,7 +479,7 @@ export default function Order() {
                       type="date"
                       value={formData.delivery_date}
                       onChange={(e) => setFormData({ ...formData, delivery_date: e.target.value })}
-                      className="py-6 rounded-xl"
+                      className="py-3 rounded-xl"
                     />
                   </div>
                   <div className="flex items-center justify-between bg-amber-50 border border-amber-200 rounded-xl p-6">

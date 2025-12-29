@@ -168,7 +168,7 @@ export default function Quote() {
                       placeholder="Your name"
                       value={formData.customer_name}
                       onChange={(e) => setFormData({ ...formData, customer_name: e.target.value })}
-                      className="pl-12 py-6 rounded-xl"
+                      className="pl-12 py-3 rounded-xl"
                       required
                     />
                   </div>
@@ -183,7 +183,7 @@ export default function Quote() {
                       placeholder="+974 XXXX XXXX"
                       value={formData.customer_phone}
                       onChange={(e) => setFormData({ ...formData, customer_phone: e.target.value })}
-                      className="pl-12 py-6 rounded-xl"
+                      className="pl-12 py-3 rounded-xl"
                       required
                     />
                   </div>
@@ -198,7 +198,7 @@ export default function Quote() {
                       placeholder="you@company.com"
                       value={formData.customer_email}
                       onChange={(e) => setFormData({ ...formData, customer_email: e.target.value })}
-                      className="pl-12 py-6 rounded-xl"
+                      className="pl-12 py-3 rounded-xl"
                     />
                   </div>
                 </div>
@@ -211,7 +211,7 @@ export default function Quote() {
                       placeholder="Your company"
                       value={formData.company_name}
                       onChange={(e) => setFormData({ ...formData, company_name: e.target.value })}
-                      className="pl-12 py-6 rounded-xl"
+                      className="pl-12 py-3 rounded-xl"
                     />
                   </div>
                 </div>
@@ -232,7 +232,7 @@ export default function Quote() {
                       placeholder="Project name or reference"
                       value={formData.project_name}
                       onChange={(e) => setFormData({ ...formData, project_name: e.target.value })}
-                      className="py-6 rounded-xl"
+                      className="py-3 rounded-xl"
                     />
                   </div>
                   <div className="space-y-2">
@@ -242,7 +242,7 @@ export default function Quote() {
                       onValueChange={(value) => setFormData({ ...formData, service_type: value })}
                       required
                     >
-                      <SelectTrigger className="py-6 rounded-xl">
+                      <SelectTrigger className="py-3 rounded-xl">
                         <SelectValue placeholder="Select service" />
                       </SelectTrigger>
                       <SelectContent>
@@ -263,7 +263,7 @@ export default function Quote() {
                       placeholder="e.g., 50 tons, 1000 pieces"
                       value={formData.quantity_estimate}
                       onChange={(e) => setFormData({ ...formData, quantity_estimate: e.target.value })}
-                      className="py-6 rounded-xl"
+                      className="py-3 rounded-xl"
                     />
                   </div>
                   <div className="space-y-2">
@@ -272,7 +272,7 @@ export default function Quote() {
                       value={formData.urgency} 
                       onValueChange={(value) => setFormData({ ...formData, urgency: value })}
                     >
-                      <SelectTrigger className="py-6 rounded-xl">
+                      <SelectTrigger className="py-3 rounded-xl">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>

@@ -213,7 +213,7 @@ Doha, Qatar
                         placeholder="Your name"
                         value={formData.name}
                         onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                        className="py-6 rounded-xl"
+                        className="py-3 rounded-xl"
                         required />
 
                     </div>
@@ -224,7 +224,7 @@ Doha, Qatar
                         placeholder="+974 XXXX XXXX"
                         value={formData.phone}
                         onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                        className="py-6 rounded-xl"
+                        className="py-3 rounded-xl"
                         required />
 
                     </div>
@@ -235,7 +235,7 @@ Doha, Qatar
                         placeholder="you@company.com"
                         value={formData.email}
                         onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                        className="py-6 rounded-xl" />
+                        className="py-3 rounded-xl" />
 
                     </div>
                     <div className="space-y-2">
@@ -244,7 +244,7 @@ Doha, Qatar
                         placeholder="Your company"
                         value={formData.company}
                         onChange={(e) => setFormData({ ...formData, company: e.target.value })}
-                        className="py-6 rounded-xl" />
+                        className="py-3 rounded-xl" />
 
                     </div>
                   </div>
@@ -255,7 +255,7 @@ Doha, Qatar
                       placeholder="What is this regarding?"
                       value={formData.subject}
                       onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
-                      className="py-6 rounded-xl" />
+                      className="py-3 rounded-xl" />
 
                   </div>
 
@@ -265,7 +265,7 @@ Doha, Qatar
                       placeholder="How can we help you?"
                       value={formData.message}
                       onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                      className="min-h-40 rounded-xl"
+                      className="min-h-32 rounded-xl"
                       required />
 
                   </div>
