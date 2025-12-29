@@ -1,4 +1,5 @@
 import React from 'react';
+import { ChevronDown } from 'lucide-react';
 import { cn } from '@/utils';
 
 const SelectContext = React.createContext(null);
@@ -58,13 +59,15 @@ function SelectTrigger({ className, children, ...props }) {
       type="button"
       onClick={() => context?.setOpen(!context?.open)}
       className={cn(
-        'flex w-full items-center rounded-md border border-gray-200 bg-white px-3 py-2 text-left',
+        'flex w-full items-center rounded-md border border-black bg-white px-3 py-2 text-left',
         className
       )}
+      aria-haspopup="listbox"
       aria-expanded={context?.open ?? false}
       {...props}
     >
-      {children}
+      <span className="flex-1">{children}</span>
+      <ChevronDown className="ml-2 h-4 w-4 text-gray-700" aria-hidden="true" />
     </button>
   );
 }
@@ -88,9 +91,10 @@ function SelectContent({ className, children, ...props }) {
   return (
     <div
       className={cn(
-        'absolute left-0 right-0 mt-2 rounded-md border border-gray-200 bg-white p-2 shadow-lg z-50',
+        'absolute left-0 right-0 mt-2 rounded-md border border-black bg-white p-2 shadow-lg z-50',
         className
       )}
+      role="listbox"
       {...props}
     >
       {children}
@@ -107,6 +111,8 @@ function SelectItem({ className, value, children, ...props }) {
         context?.setValue(value);
         context?.setOpen(false);
       }}
+      role="option"
+      aria-selected={context?.value === value}
       className={cn(
         'flex w-full items-center rounded-md px-2 py-1.5 text-left text-sm text-gray-700 hover:bg-gray-100',
         className
