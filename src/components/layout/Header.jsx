@@ -34,7 +34,7 @@ const navigation = [
 const tools = [
   { name: 'Weight Calculator', href: 'Calculator', icon: Calculator },
   { name: 'Get a Quote', href: 'Quote', icon: FileText },
-  { name: 'Order Online', href: 'Order', icon: Factory },
+  { name: 'Order Online', href: '/store?mode=manual', icon: Factory },
 ];
 
 export default function Header() {
@@ -135,7 +135,7 @@ export default function Header() {
           {/* Right Section */}
           <div className="flex items-center gap-4">
             {/* Order Button */}
-            <Link to={createPageUrl('Order')}>
+            <Link to={createPageUrl('/store?mode=manual')}>
               <Button 
                 variant="ghost" 
                 size="icon"
