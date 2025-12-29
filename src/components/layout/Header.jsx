@@ -35,7 +35,6 @@ const tools = [
   { name: 'Weight Calculator', href: 'Calculator', icon: Calculator },
   { name: 'Get a Quote', href: 'Quote', icon: FileText },
   { name: 'Order Online', href: 'Order', icon: Factory },
-  { name: 'Order Management', href: 'https://watania-oms.netlify.app/', icon: Settings, external: true },
 ];
 
 export default function Header() {

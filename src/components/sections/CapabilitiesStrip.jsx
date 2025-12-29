@@ -2,7 +2,7 @@ import React from 'react';
 import { Factory, ShieldCheck, Award, Clock, Wrench } from 'lucide-react';
 import { motion } from 'framer-motion';
 
-const capabilities = [
+export const capabilities = [
   {
     icon: Factory,
     title: '700 Tons/Day',
