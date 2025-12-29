@@ -45,27 +45,12 @@ export default function Footer() {
             </div>
             <div className="flex flex-wrap gap-4">
               <Link to={createPageUrl('Quote')}>
-                <Button
-                  className="bg-white hover:bg-gray-100 px-8 py-6 text-lg font-semibold rounded-xl"
-                  style={{ color: '#691A2A' }}
-                >
+                <Button className="bg-white text-[#691A2A] hover:bg-gray-100 px-8 py-6 text-lg font-semibold rounded-xl">
                   Get Quote
                 </Button>
               </Link>
-              <Link to={createPageUrl('Contact')}>
-                <Button
-                  className="bg-white hover:bg-gray-100 px-8 py-6 text-lg font-semibold rounded-xl"
-                  style={{ color: '#691A2A' }}
-                >
-                  Contact Us
-                </Button>
-              </Link>
               <a href="tel:+97444444444">
-                <Button
-                  variant="outline"
-                  className="border-white hover:bg-white hover:text-[#691A2A] px-8 py-6 text-lg font-semibold rounded-xl"
-                  style={{ color: '#691A2A' }}
-                >
+                <Button variant="outline" className="border-white text-[#691A2A] hover:bg-white hover:text-[#691A2A] px-8 py-6 text-lg font-semibold rounded-xl">
                   <Phone className="mr-2 w-5 h-5" />
                   Call Now
                 </Button>
