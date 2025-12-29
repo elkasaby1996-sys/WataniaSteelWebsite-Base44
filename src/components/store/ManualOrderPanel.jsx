@@ -126,9 +126,6 @@ export default function ManualOrderPanel({ settings, products = [], onBackToStor
 
   const priceUnitMultiplier = (unitType, item) => {
     const normalized = unitType?.toLowerCase() ?? '';
-    if (!normalized) {
-      return item.weightKg > 0 ? item.weightKg / 1000 : item.quantity;
-    }
     if (normalized.includes('ton')) {
       return item.weightKg / 1000;
     }
