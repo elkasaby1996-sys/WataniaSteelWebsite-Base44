@@ -12,8 +12,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  CheckCircle2,
+import { 
+  CheckCircle2, 
   Loader2,
   Plus,
   Trash2,
@@ -37,6 +37,7 @@ const defaultDeliveryOptions = [
 ];
 
 export default function ManualOrderPanel({ settings, products = [], onBackToStore }) {
+  const [orderType, setOrderType] = useState('straight');
   const [items, setItems] = useState([
     { diameter: 12, length: 12, quantity: 100, shape: '', unit: 'pieces' },
   ]);
@@ -112,7 +113,7 @@ export default function ManualOrderPanel({ settings, products = [], onBackToStor
     weightKg: calculateWeight(item),
   }));
 
-  const activeItems = itemsWithWeight;
+  const activeItems = orderType === 'upload' ? [] : itemsWithWeight;
   const totalWeight = activeItems.reduce((sum, item) => sum + item.weightKg, 0);
   const deliveryFee = deliveryOptions.find((d) => d.value === formData.delivery_method)?.price || 0;
   const expressFee = formData.is_express ? expressFeeValue : 0;
@@ -123,9 +124,6 @@ export default function ManualOrderPanel({ settings, products = [], onBackToStor
 
   const priceUnitMultiplier = (unitType, item) => {
     const normalized = unitType?.toLowerCase() ?? '';
-    if (!normalized) {
-      return item.weightKg > 0 ? item.weightKg / 1000 : item.quantity;
-    }
     if (normalized.includes('ton')) {
       return item.weightKg / 1000;
     }
@@ -141,7 +139,7 @@ export default function ManualOrderPanel({ settings, products = [], onBackToStor
     return item.weightKg || item.quantity;
   };
 
-  const productTotals = activeItems.map((item) => {
+  const productTotals = itemsWithWeight.map((item) => {
     const productByName = products.find((product) => product.name === item.shape);
     const productByDiameter = products.find((product) =>
       product.product_variants?.some((variant) => variant.diameter_mm === item.diameter)
@@ -236,66 +234,90 @@ export default function ManualOrderPanel({ settings, products = [], onBackToStor
             </Button>
           </div>
 
-          <div className="space-y-8">
-          <div className="bg-white rounded-2xl shadow-lg p-8 space-y-6">
-            <h3 className="text-lg font-bold text-gray-900">Manual Entry</h3>
-            
-            {itemsWithWeight.map((item, index) => (
-              <div key={index} className="bg-gray-50 rounded-xl p-6">
-                <div className="grid md:grid-cols-6 gap-4 items-end">
-                  <div className="space-y-2">
-                    <Label>Shape</Label>
-                    <Select
-                      value={item.shape || ''}
-                      onValueChange={(v) => updateItem(index, 'shape', v)}
-                    >
-                      <SelectTrigger className="py-3 rounded-xl">
-                        <SelectValue placeholder="Select product" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {productNames.length ? (
-                          productNames.map((name) => (
-                            <SelectItem key={name} value={name}>{name}</SelectItem>
-                          ))
-                        ) : (
-                          <SelectItem value="no-products" disabled>
-                            No products available
-                          </SelectItem>
-                        )}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Diameter</Label>
-                    <Select
-                      value={item.diameter.toString()}
-                      onValueChange={(v) => updateItem(index, 'diameter', parseInt(v, 10))}
-                    >
-                      <SelectTrigger className="py-3 rounded-xl">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {diameters.map((d) => (
-                          <SelectItem key={d} value={d.toString()}>{d}mm</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Length (m)</Label>
-                      <Input
-                        type="number"
-                        value={item.length}
-                        onChange={(e) => updateItem(index, 'length', parseFloat(e.target.value))}
-                        className="py-3 rounded-xl"
-                      />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Quantity</Label>
-                      <Input
-                        type="number"
-                        value={item.quantity}
-                        onChange={(e) => updateItem(index, 'quantity', parseInt(e.target.value, 10))}
+          <Tabs value={orderType} onValueChange={setOrderType} className="bg-white rounded-2xl shadow-lg p-8">
+            <TabsList className="grid grid-cols-3 mb-8 bg-transparent p-0 h-auto">
+              <TabsTrigger value="straight" className="py-4">
+                <Truck className="w-4 h-4 mr-2" />
+                Straight Bars
+              </TabsTrigger>
+              <TabsTrigger value="manual" className="py-4">
+                <Calculator className="w-4 h-4 mr-2" />
+                Manual Entry
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="manual" className="space-y-6">
+              <h3 className="text-lg font-bold text-gray-900">Enter Shapes Manually</h3>
+              
+              {itemsWithWeight.map((item, index) => (
+                <div key={index} className="bg-gray-50 rounded-xl p-6">
+                  <div className="grid md:grid-cols-6 gap-4 items-end">
+                    <div className="space-y-2">
+                      <Label>Shape</Label>
+                      <Select 
+                        value={item.shape || ''} 
+                        onValueChange={(v) => updateItem(index, 'shape', v)}
+                      >
+                        <SelectTrigger className="py-3 rounded-xl">
+                          <SelectValue placeholder="Select product" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {productNames.length ? (
+                            productNames.map((name) => (
+                              <SelectItem key={name} value={name}>{name}</SelectItem>
+                            ))
+                          ) : (
+                            <SelectItem value="no-products" disabled>
+                              No products available
+                            </SelectItem>
+                          )}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Diameter</Label>
+                      <Select 
+                        value={item.diameter.toString()} 
+                        onValueChange={(v) => updateItem(index, 'diameter', parseInt(v, 10))}
+                      >
+                        <SelectTrigger className="py-3 rounded-xl">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {diameters.map((d) => (
+                            <SelectItem key={d} value={d.toString()}>{d}mm</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Length (m)</Label>
+                        <Input
+                          type="number"
+                          value={item.length}
+                          onChange={(e) => updateItem(index, 'length', parseFloat(e.target.value))}
+                          className="py-3 rounded-xl"
+                        />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Quantity</Label>
+                        <Input
+                          type="number"
+                          value={item.quantity}
+                          onChange={(e) => updateItem(index, 'quantity', parseInt(e.target.value, 10))}
+                          className="py-3 rounded-xl"
+                        />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Weight (kg)</Label>
+                      <div className="bg-[#7B1F32]/10 text-[#7B1F32] font-bold py-3 px-4 rounded-xl text-center">
+                        {item.weightKg.toFixed(2)} kg
+                      </div>
+                    </div>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => removeItem(index)}
                         className="py-3 rounded-xl"
                       />
                   </div>
@@ -318,20 +340,7 @@ export default function ManualOrderPanel({ settings, products = [], onBackToStor
               </div>
             ))}
 
-            <div className="flex justify-between items-center">
-              <Button type="button" variant="outline" onClick={addItem} className="rounded-xl">
-                <Plus className="w-4 h-4 mr-2" />
-                Add Item
-              </Button>
-              <div className="text-right">
-                <div className="text-sm text-gray-500">Total Weight</div>
-                <div className="text-2xl font-black text-[#7B1F32]">{totalWeight.toFixed(2)} kg</div>
-                <p className="text-xs text-gray-500 mt-2">
-                  Note: For all bars less than 12 Meters, a cut-and-bend fee will be added.
-                </p>
-              </div>
-            </div>
-          </div>
+          </Tabs>
 
           <div className="bg-white rounded-2xl shadow-lg p-8">
             <h2 className="text-xl font-bold text-gray-900 mb-6">Customer Information</h2>
@@ -385,7 +394,7 @@ export default function ManualOrderPanel({ settings, products = [], onBackToStor
               className="border-2 border-dashed border-gray-300 rounded-2xl p-8 text-center hover:border-[#7B1F32] transition-colors cursor-pointer"
               onClick={() => document.getElementById('boq-upload').click()}
             >
-              <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+              <Truck className="w-12 h-12 text-gray-400 mx-auto mb-4" />
               <p className="text-gray-700 font-medium mb-2">
                 {boqFile ? boqFile.name : 'Click to upload BOQ file'}
               </p>
