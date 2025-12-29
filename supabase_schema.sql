@@ -244,3 +244,30 @@ with check (exists (
   select 1 from profiles
   where profiles.id = auth.uid() and profiles.role = 'admin'
 ));
+
+create policy "Public read product images"
+on storage.objects
+for select
+using (bucket_id = 'product-images');
+
+create policy "Admin upload product images"
+on storage.objects
+for insert
+with check (
+  bucket_id = 'product-images'
+  and exists (
+    select 1 from profiles
+    where profiles.id = auth.uid() and profiles.role = 'admin'
+  )
+);
+
+create policy "Admin delete product images"
+on storage.objects
+for delete
+using (
+  bucket_id = 'product-images'
+  and exists (
+    select 1 from profiles
+    where profiles.id = auth.uid() and profiles.role = 'admin'
+  )
+);
