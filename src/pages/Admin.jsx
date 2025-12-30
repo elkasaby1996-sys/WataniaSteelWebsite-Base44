@@ -28,7 +28,7 @@ import {
   seedSampleProducts,
 } from '@/services/adminService';
 import { fetchSettings, upsertSetting } from '@/services/settingsService';
-import { fetchOrders, fetchOrderDetails, updateOrderStatus } from '@/services/ordersService';
+import { fetchOrders, fetchOrderDetails, getOrderFileUrl, updateOrderStatus } from '@/services/ordersService';
 
 const categories = ['rebar', 'mesh', 'services', 'accessories', 'cut_bend'];
 const unitTypes = ['ton', 'piece', 'bundle', 'sheet'];
@@ -72,6 +72,9 @@ export default function Admin() {
   const [selectedProductId, setSelectedProductId] = useState('');
   const [selectedOrderId, setSelectedOrderId] = useState('');
   const [orderDetails, setOrderDetails] = useState(null);
+  const [orderFileUrls, setOrderFileUrls] = useState({});
+  const [orderFileErrors, setOrderFileErrors] = useState({});
+  const [loadingOrderFiles, setLoadingOrderFiles] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [saving, setSaving] = useState(false);
 
@@ -121,6 +124,50 @@ export default function Admin() {
       loadAdminData();
     }
   }, [adminUser]);
+
+  useEffect(() => {
+    const loadOrderFiles = async () => {
+      if (!orderDetails?.order_files?.length) {
+        setOrderFileUrls({});
+        setOrderFileErrors({});
+        return;
+      }
+      setLoadingOrderFiles(true);
+      try {
+        const entries = await Promise.all(
+          orderDetails.order_files.map(async (file) => {
+            try {
+              const url = await getOrderFileUrl(file.file_path, {
+                orderId: orderDetails.id,
+                fileName: file.file_name,
+              });
+              return { id: file.id, url, error: null };
+            } catch (error) {
+              return { id: file.id, url: null, error: error.message };
+            }
+          })
+        );
+        setOrderFileUrls(
+          entries.reduce((acc, entry) => {
+            acc[entry.id] = entry.url;
+            return acc;
+          }, {})
+        );
+        setOrderFileErrors(
+          entries.reduce((acc, entry) => {
+            acc[entry.id] = entry.error;
+            return acc;
+          }, {})
+        );
+      } catch (error) {
+        toast.error(error.message);
+      } finally {
+        setLoadingOrderFiles(false);
+      }
+    };
+
+    loadOrderFiles();
+  }, [orderDetails]);
 
   const handleLogin = async (event) => {
     event.preventDefault();
@@ -807,15 +854,46 @@ export default function Admin() {
                       <div className="text-gray-500">Select an order to view details.</div>
                     ) : (
                       <div className="space-y-4">
-                        <div>
-                          <div className="font-semibold text-gray-900">{orderDetails.order_number}</div>
-                          <div className="text-sm text-gray-500">{orderDetails.company_name}</div>
+                        <div className="flex items-start justify-between gap-4">
+                          <div>
+                            <div className="font-semibold text-gray-900">{orderDetails.order_number}</div>
+                            <div className="text-sm text-gray-500">
+                              {orderDetails.company_name || orderDetails.contact_name}
+                            </div>
+                            <div className="text-xs text-gray-400 mt-1">
+                              {orderDetails.created_at ? new Date(orderDetails.created_at).toLocaleString() : '—'}
+                            </div>
+                          </div>
+                          <Badge variant="outline">{orderDetails.status}</Badge>
                         </div>
-                        <div className="text-sm text-gray-600">
-                          <div>Contact: {orderDetails.contact_name}</div>
-                          <div>Phone: {orderDetails.phone}</div>
-                          <div>Email: {orderDetails.customer_email}</div>
-                          <div>Delivery: {orderDetails.delivery_type}</div>
+                        <div className="grid md:grid-cols-2 gap-4 text-sm text-gray-600">
+                          <div className="space-y-1">
+                            <div className="font-semibold text-gray-900">Customer</div>
+                            <div>Name: {orderDetails.contact_name}</div>
+                            <div>Company: {orderDetails.company_name || '—'}</div>
+                            <div>Email: {orderDetails.customer_email || '—'}</div>
+                            <div>Phone: {orderDetails.phone || '—'}</div>
+                          </div>
+                          <div className="space-y-1">
+                            <div className="font-semibold text-gray-900">Delivery</div>
+                            <div>Type: {orderDetails.delivery_type || '—'}</div>
+                            <div>Address: {orderDetails.delivery_address || '—'}</div>
+                            <div>Preferred Date: {orderDetails.preferred_delivery_date || '—'}</div>
+                            <div>Express: {orderDetails.express ? 'Yes' : 'No'}</div>
+                          </div>
+                          <div className="space-y-1">
+                            <div className="font-semibold text-gray-900">Payment</div>
+                            <div>Method: {orderDetails.payment_method || '—'}</div>
+                            <div>Subtotal: {orderDetails.subtotal_qr ?? 0} QAR</div>
+                            <div>Delivery Fee: {orderDetails.delivery_fee_qr ?? 0} QAR</div>
+                            <div>Express Fee: {orderDetails.express_fee_qr ?? 0} QAR</div>
+                            <div>Cut-and-Bend Fee: {orderDetails.cut_bend_fee_qr ?? 0} QAR</div>
+                            <div>Grand Total: {orderDetails.grand_total_qr ?? 0} QAR</div>
+                          </div>
+                          <div className="space-y-1">
+                            <div className="font-semibold text-gray-900">Notes</div>
+                            <div>{orderDetails.notes || '—'}</div>
+                          </div>
                         </div>
                         <div className="space-y-2">
                           <Label>Status</Label>
@@ -832,23 +910,63 @@ export default function Admin() {
                         </div>
                         <div>
                           <h3 className="font-semibold text-gray-900 mb-2">Items</h3>
-                          <div className="space-y-2">
-                            {(orderDetails.order_items || []).map((item) => (
-                              <div key={item.id} className="border rounded-lg p-3 text-sm">
-                                <div>Diameter: {item.diameter_mm || 'Custom'}</div>
-                                <div>Qty: {item.qty}</div>
-                                <div>Weight: {item.weight_kg} kg</div>
-                              </div>
-                            ))}
-                          </div>
+                          {(orderDetails.order_items || []).length === 0 ? (
+                            <div className="text-sm text-gray-500">No items recorded.</div>
+                          ) : (
+                            <div className="overflow-x-auto border rounded-lg">
+                              <table className="min-w-full text-sm">
+                                <thead className="bg-gray-50 text-gray-600">
+                                  <tr>
+                                    <th className="text-left px-3 py-2">Shape/Notes</th>
+                                    <th className="text-left px-3 py-2">Diameter</th>
+                                    <th className="text-left px-3 py-2">Length (m)</th>
+                                    <th className="text-left px-3 py-2">Qty</th>
+                                    <th className="text-left px-3 py-2">Weight (kg)</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {orderDetails.order_items.map((item) => (
+                                    <tr key={item.id} className="border-t">
+                                      <td className="px-3 py-2">{item.notes || '—'}</td>
+                                      <td className="px-3 py-2">{item.diameter_mm || 'Custom'}</td>
+                                      <td className="px-3 py-2">{item.length_m ?? '—'}</td>
+                                      <td className="px-3 py-2">{item.qty ?? '—'}</td>
+                                      <td className="px-3 py-2">{item.weight_kg ?? '—'}</td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
+                            </div>
+                          )}
                         </div>
                         {(orderDetails.order_files || []).length > 0 && (
                           <div>
                             <h3 className="font-semibold text-gray-900 mb-2">Files</h3>
-                            <div className="space-y-2">
+                            <div className="space-y-2 text-sm text-gray-600">
                               {orderDetails.order_files.map((file) => (
-                                <div key={file.id} className="text-sm text-gray-600">
-                                  {file.file_name}
+                                <div key={file.id} className="flex items-center justify-between gap-3 border rounded-lg p-3">
+                                  <div>
+                                    <div className="font-medium text-gray-900">{file.file_name}</div>
+                                    <div className="text-xs text-gray-500">{file.mime_type || 'File'}</div>
+                                    {orderFileErrors[file.id] && (
+                                      <div className="text-xs text-amber-600 mt-1">
+                                        {orderFileErrors[file.id]}
+                                      </div>
+                                    )}
+                                  </div>
+                                  {orderFileUrls[file.id] ? (
+                                    <Button
+                                      type="button"
+                                      variant="outline"
+                                      onClick={() => window.open(orderFileUrls[file.id], '_blank', 'noopener')}
+                                    >
+                                      View/Download
+                                    </Button>
+                                  ) : (
+                                    <Button type="button" variant="outline" disabled>
+                                      {loadingOrderFiles ? 'Loading...' : 'Unavailable'}
+                                    </Button>
+                                  )}
                                 </div>
                               ))}
                             </div>
