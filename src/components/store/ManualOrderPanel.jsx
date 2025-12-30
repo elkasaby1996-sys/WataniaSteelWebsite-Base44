@@ -11,9 +11,9 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { 
-  CheckCircle2, 
+} from '@/components/ui/select';
+import {
+  CheckCircle2,
   Loader2,
   Plus,
   Trash2,
@@ -37,7 +37,6 @@ const defaultDeliveryOptions = [
 ];
 
 export default function ManualOrderPanel({ settings, products = [], onBackToStore }) {
-  const [orderType, setOrderType] = useState('straight');
   const [items, setItems] = useState([
     { diameter: 12, length: 12, quantity: 100, shape: '', unit: 'pieces' },
   ]);
@@ -113,17 +112,19 @@ export default function ManualOrderPanel({ settings, products = [], onBackToStor
     weightKg: calculateWeight(item),
   }));
 
-  const activeItems = orderType === 'upload' ? [] : itemsWithWeight;
-  const totalWeight = activeItems.reduce((sum, item) => sum + item.weightKg, 0);
+  const totalWeight = itemsWithWeight.reduce((sum, item) => sum + item.weightKg, 0);
   const deliveryFee = deliveryOptions.find((d) => d.value === formData.delivery_method)?.price || 0;
   const expressFee = formData.is_express ? expressFeeValue : 0;
   const cutAndBendFeeValue = settings?.cut_bend_fee?.fee ?? 0;
-  const hasCutAndBend = activeItems.some((item) => Number(item.length) > 0 && item.length < 12);
+  const hasCutAndBend = itemsWithWeight.some((item) => Number(item.length) > 0 && item.length < 12);
   const cutAndBendFee = hasCutAndBend ? cutAndBendFeeValue : 0;
   const additionalFeesTotal = deliveryFee + expressFee + cutAndBendFee;
 
   const priceUnitMultiplier = (unitType, item) => {
     const normalized = unitType?.toLowerCase() ?? '';
+    if (!normalized) {
+      return item.weightKg > 0 ? item.weightKg / 1000 : item.quantity;
+    }
     if (normalized.includes('ton')) {
       return item.weightKg / 1000;
     }
@@ -201,7 +202,7 @@ export default function ManualOrderPanel({ settings, products = [], onBackToStor
           </p>
           <p className="text-lg font-semibold text-[#7B1F32] mb-6">Order #{orderNumber}</p>
           <div className="flex flex-col gap-3">
-            <Button 
+            <Button
               onClick={() => {
                 setSubmitted(false);
                 setOrderNumber('');
@@ -224,34 +225,27 @@ export default function ManualOrderPanel({ settings, products = [], onBackToStor
     <section className="py-16 bg-gray-50" id="manual-order-panel">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <form onSubmit={handleSubmit}>
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-3xl font-bold text-gray-900">Place Your Order</h2>
-              <p className="text-gray-600 mt-2">Choose your ordering method and submit your requirements directly.</p>
+          <div className="space-y-8">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-3xl font-bold text-gray-900">Place Your Order</h2>
+                <p className="text-gray-600 mt-2">Choose your ordering method and submit your requirements directly.</p>
+              </div>
+              <Button type="button" variant="outline" onClick={onBackToStore} className="rounded-xl">
+                Back to Store
+              </Button>
             </div>
 
-          <Tabs value={orderType} onValueChange={setOrderType} className="bg-white rounded-2xl shadow-lg p-8">
-            <TabsList className="grid grid-cols-3 mb-8 bg-transparent p-0 h-auto">
-              <TabsTrigger value="straight" className="py-4">
-                <Truck className="w-4 h-4 mr-2" />
-                Straight Bars
-              </TabsTrigger>
-              <TabsTrigger value="manual" className="py-4">
-                <Calculator className="w-4 h-4 mr-2" />
-                Manual Entry
-              </TabsTrigger>
-            </TabsList>
+            <div className="bg-white rounded-2xl shadow-lg p-8 space-y-6">
+              <h3 className="text-lg font-bold text-gray-900">Manual Entry</h3>
 
-            <TabsContent value="manual" className="space-y-6">
-              <h3 className="text-lg font-bold text-gray-900">Enter Shapes Manually</h3>
-              
               {itemsWithWeight.map((item, index) => (
                 <div key={index} className="bg-gray-50 rounded-xl p-6">
                   <div className="grid md:grid-cols-6 gap-4 items-end">
                     <div className="space-y-2">
                       <Label>Shape</Label>
-                      <Select 
-                        value={item.shape || ''} 
+                      <Select
+                        value={item.shape || ''}
                         onValueChange={(v) => updateItem(index, 'shape', v)}
                       >
                         <SelectTrigger className="py-3 rounded-xl">
@@ -260,7 +254,9 @@ export default function ManualOrderPanel({ settings, products = [], onBackToStor
                         <SelectContent>
                           {productNames.length ? (
                             productNames.map((name) => (
-                              <SelectItem key={name} value={name}>{name}</SelectItem>
+                              <SelectItem key={name} value={name}>
+                                {name}
+                              </SelectItem>
                             ))
                           ) : (
                             <SelectItem value="no-products" disabled>
@@ -318,28 +314,98 @@ export default function ManualOrderPanel({ settings, products = [], onBackToStor
                         variant="outline"
                         onClick={() => removeItem(index)}
                         className="py-3 rounded-xl"
-                      />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Weight (kg)</Label>
-                    <div className="bg-[#7B1F32]/10 text-[#7B1F32] font-bold py-3 px-4 rounded-xl text-center">
-                      {item.weightKg.toFixed(2)} kg
+                        disabled={items.length === 1}
+                      >
+                        <Trash2 className="w-5 h-5" />
+                      </Button>
                     </div>
                   </div>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => removeItem(index)}
-                      className="py-3 rounded-xl"
-                      disabled={items.length === 1}
-                    >
-                    <Trash2 className="w-5 h-5" />
-                  </Button>
+                </div>
+              ))}
+
+              <div className="flex justify-between items-center">
+                <Button type="button" variant="outline" onClick={addItem} className="rounded-xl">
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add Item
+                </Button>
+                <div className="text-right">
+                  <div className="text-sm text-gray-500">Total Weight</div>
+                  <div className="text-2xl font-black text-[#7B1F32]">{totalWeight.toFixed(2)} kg</div>
+                  <p className="text-xs text-gray-500 mt-2">
+                    Note: For all bars less than 12 Meters, a cut-and-bend fee will be added.
+                  </p>
                 </div>
               </div>
-            ))}
+            </div>
 
-          </Tabs>
+            <div className="bg-white rounded-2xl shadow-lg p-8">
+              <h2 className="text-xl font-bold text-gray-900 mb-6">Customer Information</h2>
+              <div className="grid md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <Label>Full Name *</Label>
+                  <Input
+                    placeholder="Your name"
+                    value={formData.customer_name}
+                    onChange={(e) => setFormData({ ...formData, customer_name: e.target.value })}
+                    className="py-3 rounded-xl"
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Phone Number *</Label>
+                  <Input
+                    type="tel"
+                    placeholder="+974 XXXX XXXX"
+                    value={formData.customer_phone}
+                    onChange={(e) => setFormData({ ...formData, customer_phone: e.target.value })}
+                    className="py-3 rounded-xl"
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Email</Label>
+                  <Input
+                    type="email"
+                    placeholder="you@company.com"
+                    value={formData.customer_email}
+                    onChange={(e) => setFormData({ ...formData, customer_email: e.target.value })}
+                    className="py-3 rounded-xl"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Company Name</Label>
+                  <Input
+                    placeholder="Your company"
+                    value={formData.company_name}
+                    onChange={(e) => setFormData({ ...formData, company_name: e.target.value })}
+                    className="py-3 rounded-xl"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-2xl shadow-lg p-8">
+              <h2 className="text-xl font-bold text-gray-900 mb-6">Apply BOQ (Optional)</h2>
+              <div
+                className="border-2 border-dashed border-gray-300 rounded-2xl p-8 text-center hover:border-[#7B1F32] transition-colors cursor-pointer"
+                onClick={() => document.getElementById('boq-upload').click()}
+              >
+                <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                <p className="text-gray-700 font-medium mb-2">
+                  {boqFile ? boqFile.name : 'Click to upload BOQ file'}
+                </p>
+                <p className="text-gray-500 text-sm">
+                  Any file format accepted
+                </p>
+                <input
+                  id="boq-upload"
+                  type="file"
+                  accept="*"
+                  onChange={(e) => setBoqFile(e.target.files[0])}
+                  className="hidden"
+                />
+              </div>
+            </div>
 
             <div className="bg-white rounded-2xl shadow-lg p-8">
               <h2 className="text-xl font-bold text-gray-900 mb-6">Delivery Options</h2>
@@ -402,34 +468,9 @@ export default function ManualOrderPanel({ settings, products = [], onBackToStor
               </div>
             </div>
 
-          <div className="bg-white rounded-2xl shadow-lg p-8">
-            <h2 className="text-xl font-bold text-gray-900 mb-6">Apply BOQ (Optional)</h2>
-            <div
-              className="border-2 border-dashed border-gray-300 rounded-2xl p-8 text-center hover:border-[#7B1F32] transition-colors cursor-pointer"
-              onClick={() => document.getElementById('boq-upload').click()}
-            >
-              <Truck className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-700 font-medium mb-2">
-                {boqFile ? boqFile.name : 'Click to upload BOQ file'}
-              </p>
-              <p className="text-gray-500 text-sm">
-                Any file format accepted
-              </p>
-              <input
-                id="boq-upload"
-                type="file"
-                accept="*"
-                onChange={(e) => setBoqFile(e.target.files[0])}
-                className="hidden"
-              />
-            </div>
-          </div>
-
-          <div className="bg-white rounded-2xl shadow-lg p-8">
-            <h2 className="text-xl font-bold text-gray-900 mb-6">Delivery Options</h2>
-            
-            <div className="grid md:grid-cols-3 gap-4 mb-6">
-              {deliveryOptions.map((option) => (
+            <div className="bg-white rounded-2xl shadow-lg p-8">
+              <h2 className="text-xl font-bold text-gray-900 mb-6">Payment Method</h2>
+              <div className="grid md:grid-cols-2 gap-4">
                 <div
                   onClick={() => setFormData({ ...formData, payment_method: 'cod' })}
                   className={`border-2 rounded-xl p-6 cursor-pointer transition-all ${
@@ -494,10 +535,6 @@ export default function ManualOrderPanel({ settings, products = [], onBackToStor
                   <span>Order Total</span>
                   <span className="font-black text-[#7B1F32]">{orderTotal.toFixed(2)} QAR</span>
                 </div>
-              )}
-              <div className="border-t border-white/20 pt-4 flex justify-between text-xl">
-                <span>Order Total</span>
-                <span className="font-black text-[#7B1F32]">{orderTotal.toFixed(2)} QAR</span>
               </div>
               <Button
                 type="submit"
@@ -514,7 +551,6 @@ export default function ManualOrderPanel({ settings, products = [], onBackToStor
                 )}
               </Button>
             </div>
-          </div>
           </div>
         </form>
       </div>
