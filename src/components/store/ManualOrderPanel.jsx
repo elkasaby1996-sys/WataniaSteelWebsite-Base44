@@ -11,7 +11,7 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from '@/components/ui/select';
 import {
   CheckCircle2,
   Loader2,
@@ -141,7 +141,7 @@ export default function ManualOrderPanel({ settings, products = [], onBackToStor
     return item.weightKg || item.quantity;
   };
 
-  const productLineItems = activeItems.map((item) => {
+  const productTotals = itemsWithWeight.map((item) => {
     const productByName = products.find((product) => product.name === item.shape);
     const productByDiameter = products.find((product) =>
       product.product_variants?.some((variant) => variant.diameter_mm === item.diameter)
@@ -150,18 +150,13 @@ export default function ManualOrderPanel({ settings, products = [], onBackToStor
     const variant = product?.product_variants?.find(
       (variant) => variant.diameter_mm === item.diameter
     );
-    const unitPrice = variant?.price_qr ?? product?.price_qr ?? 0;
+    const price = variant?.price_qr ?? product?.price_qr ?? 0;
     const unitType = variant?.unit_type ?? product?.unit_type ?? '';
     const multiplier = priceUnitMultiplier(unitType, item);
-    const lineTotal = unitPrice * multiplier;
-    return {
-      unitPrice,
-      unitType,
-      lineTotal,
-    };
+    return price * multiplier;
   });
 
-  const productsTotal = productLineItems.reduce((sum, item) => sum + item.lineTotal, 0);
+  const productsTotal = productTotals.reduce((sum, total) => sum + total, 0);
   const orderTotal = productsTotal + additionalFeesTotal;
 
   const handleSubmit = async (event) => {
@@ -170,11 +165,7 @@ export default function ManualOrderPanel({ settings, products = [], onBackToStor
     try {
       const result = await createManualOrder({
         formData,
-        items: itemsWithWeight.map((item, index) => ({
-          ...item,
-          unit_price_snapshot_qr: productLineItems[index]?.unitPrice ?? 0,
-          line_total_qr: productLineItems[index]?.lineTotal ?? 0,
-        })),
+        items: itemsWithWeight,
         orderType: 'manual',
         deliveryFee,
         expressFee,
@@ -214,7 +205,7 @@ export default function ManualOrderPanel({ settings, products = [], onBackToStor
           </p>
           <p className="text-lg font-semibold text-[#7B1F32] mb-6">Order #{orderNumber}</p>
           <div className="flex flex-col gap-3">
-            <Button 
+            <Button
               onClick={() => {
                 setSubmitted(false);
                 setOrderNumber('');
