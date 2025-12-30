@@ -17,7 +17,16 @@ export const createManualOrder = async ({
   totalWeightKg,
   boqFile,
 }) => {
+  const { data: sessionData } = await supabase.auth.getSession();
+  if (!sessionData?.session) {
+    const { error: signInError } = await supabase.auth.signInAnonymously();
+    if (signInError) {
+      throw new Error('Unable to start an anonymous session. Please refresh and try again.');
+    }
+  }
+
   const orderNumber = generateOrderNumber();
+  let boqUploadError = null;
   const orderPayload = {
     order_number: orderNumber,
     source: 'manual',
@@ -36,7 +45,6 @@ export const createManualOrder = async ({
     subtotal_qr: 0,
     delivery_fee_qr: deliveryFee,
     express_fee_qr: expressFee,
-    cut_bend_fee_qr: cutAndBendFee,
     grand_total_qr: deliveryFee + expressFee + cutAndBendFee,
   };
 
@@ -75,21 +83,21 @@ export const createManualOrder = async ({
       .from('order-files')
       .upload(filePath, boqFile);
     if (uploadError) {
-      throw new Error(uploadError.message);
-    }
-
-    const { error: fileRowError } = await supabase.from('order_files').insert({
-      order_id: order.id,
-      file_path: filePath,
-      file_name: boqFile.name,
-      mime_type: boqFile.type,
-    });
-    if (fileRowError) {
-      throw new Error(fileRowError.message);
+      boqUploadError = 'BOQ upload failed due to storage permissions. The order was submitted without the file.';
+    } else {
+      const { error: fileRowError } = await supabase.from('order_files').insert({
+        order_id: order.id,
+        file_path: filePath,
+        file_name: boqFile.name,
+        mime_type: boqFile.type,
+      });
+      if (fileRowError) {
+        boqUploadError = 'BOQ upload failed to save the file record. The order was submitted without the file.';
+      }
     }
   }
 
-  return order;
+  return { order, boqUploadError };
 };
 
 export const fetchOrders = async () => {
