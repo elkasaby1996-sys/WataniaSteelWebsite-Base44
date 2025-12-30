@@ -465,23 +465,21 @@ export default function Admin() {
         </div>
       </section>
 
-      <section className="bg-white border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="pt-6">
-            <TabsList className="grid grid-cols-5 w-full max-w-3xl">
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <section className="bg-white border-b">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <TabsList className="grid grid-cols-5 w-full max-w-3xl pt-6">
               <TabsTrigger value="products">Products</TabsTrigger>
               <TabsTrigger value="variants">Variants</TabsTrigger>
               <TabsTrigger value="images">Images</TabsTrigger>
               <TabsTrigger value="settings">Settings</TabsTrigger>
               <TabsTrigger value="orders">Orders</TabsTrigger>
             </TabsList>
-          </Tabs>
-        </div>
-      </section>
+          </div>
+        </section>
 
-      <section className="py-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
-          <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <section className="py-12">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
             <TabsContent value="products">
               {/* PRODUCTS CONTENT UNCHANGED */}
             </TabsContent>
@@ -643,9 +641,9 @@ export default function Admin() {
                 </div>
               </div>
             </TabsContent>
-          </Tabs>
-        </div>
-      </section>
+          </div>
+        </section>
+      </Tabs>
     </div>
   );
 }
