@@ -11,7 +11,7 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from '@/components/ui/select';
 import {
   CheckCircle2,
   Loader2,
@@ -141,7 +141,7 @@ export default function ManualOrderPanel({ settings, products = [], onBackToStor
     return item.weightKg || item.quantity;
   };
 
-  const productTotals = activeItems.map((item) => {
+  const productTotals = itemsWithWeight.map((item) => {
     const productByName = products.find((product) => product.name === item.shape);
     const productByDiameter = products.find((product) =>
       product.product_variants?.some((variant) => variant.diameter_mm === item.diameter)
@@ -203,7 +203,7 @@ export default function ManualOrderPanel({ settings, products = [], onBackToStor
           </p>
           <p className="text-lg font-semibold text-[#7B1F32] mb-6">Order #{orderNumber}</p>
           <div className="flex flex-col gap-3">
-            <Button 
+            <Button
               onClick={() => {
                 setSubmitted(false);
                 setOrderNumber('');
