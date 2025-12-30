@@ -17,6 +17,14 @@ export const createManualOrder = async ({
   totalWeightKg,
   boqFile,
 }) => {
+  const { data: sessionData } = await supabase.auth.getSession();
+  if (!sessionData?.session) {
+    const { error: signInError } = await supabase.auth.signInAnonymously();
+    if (signInError) {
+      throw new Error('Unable to start an anonymous session. Please refresh and try again.');
+    }
+  }
+
   const orderNumber = generateOrderNumber();
   let boqUploadError = null;
   const orderPayload = {
@@ -63,8 +71,7 @@ export const createManualOrder = async ({
   }
 
   if (orderError) {
-    const message = orderError.message?.toLowerCase() ?? '';
-    if (message.includes('row-level security')) {
+    if (orderError.message?.toLowerCase().includes('row-level security')) {
       throw new Error(
         'Order submission is blocked by database security rules. Please enable anonymous sign-in or update the orders RLS policy.'
       );
