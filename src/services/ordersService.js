@@ -19,6 +19,7 @@ export const createManualOrder = async ({
 }) => {
   const orderNumber = generateOrderNumber();
   let boqUploadError = null;
+
   const orderPayload = {
     order_number: orderNumber,
     source: 'manual',
@@ -40,6 +41,10 @@ export const createManualOrder = async ({
     grand_total_qr: deliveryFee + expressFee + cutAndBendFee,
   };
 
+  const { data: sessionData } = await supabase.auth.getSession();
+  console.log('SESSION', sessionData);
+  console.log('ORDER PAYLOAD', orderPayload);
+
   const insertOrder = async () =>
     supabase
       .from('orders')
@@ -52,8 +57,8 @@ export const createManualOrder = async ({
   if (orderError) {
     const message = orderError.message?.toLowerCase() ?? '';
     if (message.includes('row-level security')) {
-      const { data: sessionData } = await supabase.auth.getSession();
-      if (!sessionData?.session) {
+      const { data: sessionDataRetry } = await supabase.auth.getSession();
+      if (!sessionDataRetry?.session) {
         const { error: anonError } = await supabase.auth.signInAnonymously();
         if (!anonError) {
           ({ data: order, error: orderError } = await insertOrder());
@@ -96,6 +101,7 @@ export const createManualOrder = async ({
     const { error: uploadError } = await supabase.storage
       .from('order-files')
       .upload(filePath, boqFile);
+
     if (uploadError) {
       boqUploadError = 'BOQ upload failed due to storage permissions. The order was submitted without the file.';
     } else {
@@ -137,70 +143,14 @@ export const fetchOrderDetails = async (orderId) => {
   return data;
 };
 
-const normalizeOrderFilePath = (filePath) => {
-  if (!filePath) return '';
-  if (filePath.startsWith('http://') || filePath.startsWith('https://')) {
-    return filePath;
+export const getOrderFileUrl = async (filePath, expiresIn = 3600) => {
+  const { data, error } = await supabase.storage
+    .from('order-files')
+    .createSignedUrl(filePath, expiresIn);
+  if (error) {
+    throw new Error(error.message);
   }
-  let normalized = filePath.replace(/^\/+/, '');
-  if (normalized.startsWith('order-files/')) {
-    normalized = normalized.replace(/^order-files\//, '');
-  }
-  return normalized;
-};
-
-export const getOrderFileUrl = async (filePath, options = {}) => {
-  const { expiresIn = 3600, orderId, fileName } = options;
-  const normalizedPath = normalizeOrderFilePath(filePath);
-  if (!normalizedPath) {
-    if (orderId && fileName) {
-      return getOrderFileUrl(`${orderId}/${fileName}`, { expiresIn });
-    }
-    return null;
-  }
-  if (normalizedPath.startsWith('http://') || normalizedPath.startsWith('https://')) {
-    return normalizedPath;
-  }
-
-  const candidates = [normalizedPath];
-  if (normalizedPath.includes('/')) {
-    candidates.push(normalizedPath.split('/').slice(-1).join('/'));
-  }
-  if (orderId && fileName) {
-    candidates.push(`${orderId}/${fileName}`);
-  }
-
-  if (orderId) {
-    const { data: listData, error: listError } = await supabase.storage
-      .from('order-files')
-      .list(orderId, { limit: 100 });
-    if (!listError && Array.isArray(listData)) {
-      const match = listData.find((item) => item.name === fileName);
-      if (match?.name) {
-        candidates.unshift(`${orderId}/${match.name}`);
-      }
-    }
-  }
-
-  let lastError = null;
-  for (const candidate of candidates) {
-    const { data, error } = await supabase.storage
-      .from('order-files')
-      .createSignedUrl(candidate, expiresIn);
-    if (!error) {
-      return data?.signedUrl || null;
-    }
-    lastError = error;
-    const message = error.message?.toLowerCase() ?? '';
-    if (!message.includes('not found') && !message.includes('does not exist')) {
-      break;
-    }
-  }
-
-  if (lastError) {
-    throw new Error(lastError.message);
-  }
-  return null;
+  return data?.signedUrl || null;
 };
 
 export const updateOrderStatus = async (orderId, status) => {
