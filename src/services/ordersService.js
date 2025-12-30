@@ -17,6 +17,14 @@ export const createManualOrder = async ({
   totalWeightKg,
   boqFile,
 }) => {
+  const { data: sessionData } = await supabase.auth.getSession();
+  if (!sessionData?.session) {
+    const { error: signInError } = await supabase.auth.signInAnonymously();
+    if (signInError) {
+      throw new Error('Unable to start an anonymous session. Please refresh and try again.');
+    }
+  }
+
   const orderNumber = generateOrderNumber();
   let boqUploadError = null;
   const orderPayload = {
