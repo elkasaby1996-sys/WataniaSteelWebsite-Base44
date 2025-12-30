@@ -144,6 +144,16 @@ export const fetchOrderDetails = async (orderId) => {
   return data;
 };
 
+export const getOrderFileUrl = async (filePath, expiresIn = 3600) => {
+  const { data, error } = await supabase.storage
+    .from('order-files')
+    .createSignedUrl(filePath, expiresIn);
+  if (error) {
+    throw new Error(error.message);
+  }
+  return data?.signedUrl || null;
+};
+
 export const updateOrderStatus = async (orderId, status) => {
   const { error } = await supabase.from('orders').update({ status }).eq('id', orderId);
   if (error) {
