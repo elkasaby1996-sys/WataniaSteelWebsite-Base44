@@ -13,17 +13,7 @@ const sizeClasses = {
 };
 
 const Button = React.forwardRef(
-  (
-    {
-      className,
-      variant = 'default',
-      size = 'default',
-      type = 'button',
-      asChild,
-      ...props
-    },
-    ref
-  ) => (
+  ({ className, variant = 'default', size = 'default', type = 'button', asChild, ...props }, ref) => (
     <button
       ref={ref}
       type={type}
