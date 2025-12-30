@@ -73,7 +73,6 @@ export default function Admin() {
   const [selectedOrderId, setSelectedOrderId] = useState('');
   const [orderDetails, setOrderDetails] = useState(null);
   const [orderFileUrls, setOrderFileUrls] = useState({});
-  const [orderFileErrors, setOrderFileErrors] = useState({});
   const [loadingOrderFiles, setLoadingOrderFiles] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -129,36 +128,17 @@ export default function Admin() {
     const loadOrderFiles = async () => {
       if (!orderDetails?.order_files?.length) {
         setOrderFileUrls({});
-        setOrderFileErrors({});
         return;
       }
       setLoadingOrderFiles(true);
       try {
         const entries = await Promise.all(
           orderDetails.order_files.map(async (file) => {
-            try {
-              const url = await getOrderFileUrl(file.file_path, {
-                orderId: orderDetails.id,
-                fileName: file.file_name,
-              });
-              return { id: file.id, url, error: null };
-            } catch (error) {
-              return { id: file.id, url: null, error: error.message };
-            }
+            const url = await getOrderFileUrl(file.file_path);
+            return [file.id, url];
           })
         );
-        setOrderFileUrls(
-          entries.reduce((acc, entry) => {
-            acc[entry.id] = entry.url;
-            return acc;
-          }, {})
-        );
-        setOrderFileErrors(
-          entries.reduce((acc, entry) => {
-            acc[entry.id] = entry.error;
-            return acc;
-          }, {})
-        );
+        setOrderFileUrls(Object.fromEntries(entries));
       } catch (error) {
         toast.error(error.message);
       } finally {
@@ -883,29 +863,11 @@ export default function Admin() {
                           </div>
                           <div className="space-y-1">
                             <div className="font-semibold text-gray-900">Payment</div>
-                            {(() => {
-                              const subtotal = Number(orderDetails.subtotal_qr ?? 0);
-                              const deliveryFee = Number(orderDetails.delivery_fee_qr ?? 0);
-                              const expressFee = Number(orderDetails.express_fee_qr ?? 0);
-                              const cutBendFee = Number(orderDetails.cut_bend_fee_qr ?? 0);
-                              const grandTotal = subtotal + deliveryFee + expressFee + cutBendFee;
-                              const totalPayable = subtotal + grandTotal;
-                              return (
-                                <>
-                                  <div>Method: {orderDetails.payment_method || '—'}</div>
-                                  <div>Subtotal: {subtotal.toFixed(2)} QAR</div>
-                                  <div>Delivery Fee: {deliveryFee.toFixed(2)} QAR</div>
-                                  <div>Express Fee: {expressFee.toFixed(2)} QAR</div>
-                                  <div>Cut-and-Bend Fee: {cutBendFee.toFixed(2)} QAR</div>
-                                  <div className="pt-1 font-semibold text-gray-900">
-                                    Grand Total: {grandTotal.toFixed(2)} QAR
-                                  </div>
-                                  <div className="font-semibold text-gray-900">
-                                    Total Payable Amount: {totalPayable.toFixed(2)} QAR
-                                  </div>
-                                </>
-                              );
-                            })()}
+                            <div>Method: {orderDetails.payment_method || '—'}</div>
+                            <div>Subtotal: {orderDetails.subtotal_qr ?? 0} QAR</div>
+                            <div>Delivery Fee: {orderDetails.delivery_fee_qr ?? 0} QAR</div>
+                            <div>Express Fee: {orderDetails.express_fee_qr ?? 0} QAR</div>
+                            <div>Grand Total: {orderDetails.grand_total_qr ?? 0} QAR</div>
                           </div>
                           <div className="space-y-1">
                             <div className="font-semibold text-gray-900">Notes</div>
@@ -965,25 +927,21 @@ export default function Admin() {
                                   <div>
                                     <div className="font-medium text-gray-900">{file.file_name}</div>
                                     <div className="text-xs text-gray-500">{file.mime_type || 'File'}</div>
-                                    {orderFileErrors[file.id] && (
-                                      <div className="text-xs text-amber-600 mt-1">
-                                        {orderFileErrors[file.id]}
-                                      </div>
-                                    )}
                                   </div>
-                                  {orderFileUrls[file.id] ? (
-                                    <Button
-                                      type="button"
-                                      variant="outline"
-                                      onClick={() => window.open(orderFileUrls[file.id], '_blank', 'noopener')}
-                                    >
-                                      View/Download
-                                    </Button>
-                                  ) : (
-                                    <Button type="button" variant="outline" disabled>
-                                      {loadingOrderFiles ? 'Loading...' : 'Unavailable'}
-                                    </Button>
-                                  )}
+                                  <Button
+                                    type="button"
+                                    variant="outline"
+                                    disabled={loadingOrderFiles || !orderFileUrls[file.id]}
+                                    asChild={Boolean(orderFileUrls[file.id])}
+                                  >
+                                    {orderFileUrls[file.id] ? (
+                                      <a href={orderFileUrls[file.id]} target="_blank" rel="noreferrer" download>
+                                        View/Download
+                                      </a>
+                                    ) : (
+                                      <span>{loadingOrderFiles ? 'Loading...' : 'Unavailable'}</span>
+                                    )}
+                                  </Button>
                                 </div>
                               ))}
                             </div>
