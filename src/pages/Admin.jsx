@@ -885,18 +885,19 @@ export default function Admin() {
                             <div className="font-semibold text-gray-900">Payment</div>
                             {(() => {
                               const subtotal = Number(orderDetails.subtotal_qr ?? 0);
-                              const derivedSubtotal = (orderDetails.order_items || [])
+                              const lineSubtotal = (orderDetails.order_items || [])
                                 .map((item) => Number(item.line_total_qr))
-                                .filter((value) => Number.isFinite(value))
-                                .reduce((sum, value) => sum + value, subtotal || 0);
+                                .filter((value) => Number.isFinite(value) && value > 0)
+                                .reduce((sum, value) => sum + value, 0);
                               const deliveryFee = Number(orderDetails.delivery_fee_qr ?? 0);
                               const expressFee = Number(orderDetails.express_fee_qr ?? 0);
                               const cutBendFee = Number(orderDetails.cut_bend_fee_qr ?? 0);
-                              const grandTotal = derivedSubtotal + deliveryFee + expressFee + cutBendFee;
+                              const effectiveSubtotal = lineSubtotal > 0 ? lineSubtotal : subtotal;
+                              const grandTotal = effectiveSubtotal + deliveryFee + expressFee + cutBendFee;
                               return (
                                 <>
                                   <div>Method: {orderDetails.payment_method || '—'}</div>
-                                  <div>Subtotal: {derivedSubtotal.toFixed(2)} QAR</div>
+                                  <div>Subtotal: {effectiveSubtotal.toFixed(2)} QAR</div>
                                   <div>Delivery Fee: {deliveryFee.toFixed(2)} QAR</div>
                                   <div>Express Fee: {expressFee.toFixed(2)} QAR</div>
                                   <div>Cut-and-Bend Fee: {cutBendFee.toFixed(2)} QAR</div>
