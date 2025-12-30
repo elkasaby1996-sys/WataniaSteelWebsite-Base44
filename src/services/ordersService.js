@@ -48,11 +48,27 @@ export const createManualOrder = async ({
     grand_total_qr: deliveryFee + expressFee + cutAndBendFee,
   };
 
-  const { data: order, error: orderError } = await supabase
-    .from('orders')
-    .insert(orderPayload)
-    .select('id, order_number')
-    .single();
+  const insertOrder = async () =>
+    supabase
+      .from('orders')
+      .insert(orderPayload)
+      .select('id, order_number')
+      .single();
+
+  let { data: order, error: orderError } = await insertOrder();
+
+  if (orderError) {
+    const message = orderError.message?.toLowerCase() ?? '';
+    if (message.includes('row-level security')) {
+      const { data: sessionData } = await supabase.auth.getSession();
+      if (!sessionData?.session) {
+        const { error: anonError } = await supabase.auth.signInAnonymously();
+        if (!anonError) {
+          ({ data: order, error: orderError } = await insertOrder());
+        }
+      }
+    }
+  }
 
   if (orderError) {
     if (orderError.message?.toLowerCase().includes('row-level security')) {
