@@ -170,6 +170,8 @@ export default function ManualOrderPanel({ settings, products = [], onBackToStor
         deliveryFee,
         expressFee,
         cutAndBendFee,
+        productsTotal,
+        orderTotal,
         totalWeightKg: Number(totalWeight.toFixed(2)),
         boqFile,
       });

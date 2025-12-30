@@ -14,6 +14,8 @@ export const createManualOrder = async ({
   deliveryFee,
   expressFee,
   cutAndBendFee,
+  productsTotal,
+  orderTotal,
   totalWeightKg,
   boqFile,
 }) => {
@@ -35,7 +37,7 @@ export const createManualOrder = async ({
     notes: formData.notes || null,
     status: 'pending_review',
     total_weight_kg: totalWeightKg,
-    subtotal_qr: 0,
+    subtotal_qr: productsTotal ?? 0,
     delivery_fee_qr: deliveryFee,
     express_fee_qr: expressFee,
     grand_total_qr: deliveryFee + expressFee + cutAndBendFee,
@@ -85,6 +87,8 @@ export const createManualOrder = async ({
     length_m: item.length,
     qty: item.quantity,
     weight_kg: item.weightKg,
+    unit_price_snapshot_qr: item.unit_price_snapshot_qr ?? null,
+    line_total_qr: item.line_total_qr ?? null,
     notes: item.shape || null,
   }));
 
