@@ -55,6 +55,11 @@ export const createManualOrder = async ({
     .single();
 
   if (orderError) {
+    if (orderError.message?.toLowerCase().includes('row-level security')) {
+      throw new Error(
+        'Order submission is blocked by database security rules. Please enable anonymous sign-in or update the orders RLS policy.'
+      );
+    }
     throw new Error(orderError.message);
   }
 
