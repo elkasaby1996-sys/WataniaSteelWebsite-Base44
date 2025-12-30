@@ -17,16 +17,9 @@ export const createManualOrder = async ({
   totalWeightKg,
   boqFile,
 }) => {
-  const { data: sessionData } = await supabase.auth.getSession();
-  if (!sessionData?.session) {
-    const { error: signInError } = await supabase.auth.signInAnonymously();
-    if (signInError) {
-      throw new Error('Unable to start an anonymous session. Please refresh and try again.');
-    }
-  }
-
   const orderNumber = generateOrderNumber();
   let boqUploadError = null;
+
   const orderPayload = {
     order_number: orderNumber,
     source: 'manual',
@@ -48,6 +41,10 @@ export const createManualOrder = async ({
     grand_total_qr: deliveryFee + expressFee + cutAndBendFee,
   };
 
+  const { data: sessionData } = await supabase.auth.getSession();
+  console.log('SESSION', sessionData);
+  console.log('ORDER PAYLOAD', orderPayload);
+
   const insertOrder = async () =>
     supabase
       .from('orders')
@@ -60,8 +57,8 @@ export const createManualOrder = async ({
   if (orderError) {
     const message = orderError.message?.toLowerCase() ?? '';
     if (message.includes('row-level security')) {
-      const { data: sessionData } = await supabase.auth.getSession();
-      if (!sessionData?.session) {
+      const { data: sessionDataRetry } = await supabase.auth.getSession();
+      if (!sessionDataRetry?.session) {
         const { error: anonError } = await supabase.auth.signInAnonymously();
         if (!anonError) {
           ({ data: order, error: orderError } = await insertOrder());
@@ -71,7 +68,8 @@ export const createManualOrder = async ({
   }
 
   if (orderError) {
-    if (orderError.message?.toLowerCase().includes('row-level security')) {
+    const message = orderError.message?.toLowerCase() ?? '';
+    if (message.includes('row-level security')) {
       throw new Error(
         'Order submission is blocked by database security rules. Please enable anonymous sign-in or update the orders RLS policy.'
       );
@@ -103,6 +101,7 @@ export const createManualOrder = async ({
     const { error: uploadError } = await supabase.storage
       .from('order-files')
       .upload(filePath, boqFile);
+
     if (uploadError) {
       boqUploadError = 'BOQ upload failed due to storage permissions. The order was submitted without the file.';
     } else {
