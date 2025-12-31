@@ -141,7 +141,7 @@ export default function ManualOrderPanel({ settings, products = [], onBackToStor
     return item.weightKg || item.quantity;
   };
 
-  const productTotals = itemsWithWeight.map((item) => {
+  const itemPricing = itemsWithWeight.map((item) => {
     const productByName = products.find((product) => product.name === item.shape);
     const productByDiameter = products.find((product) =>
       product.product_variants?.some((variant) => variant.diameter_mm === item.diameter)
@@ -150,14 +150,20 @@ export default function ManualOrderPanel({ settings, products = [], onBackToStor
     const variant = product?.product_variants?.find(
       (variant) => variant.diameter_mm === item.diameter
     );
-    const price = variant?.price_qr ?? product?.price_qr ?? 0;
+    const price = variant?.price_qr ?? product?.price_qr ?? null;
     const unitType = variant?.unit_type ?? product?.unit_type ?? '';
+    if (price === null) {
+      return { isUponRequest: true, total: null, unitPrice: null };
+    }
     const multiplier = priceUnitMultiplier(unitType, item);
-    return price * multiplier;
+    return { isUponRequest: false, total: price * multiplier, unitPrice: price };
   });
 
-  const productsTotal = productTotals.reduce((sum, total) => sum + total, 0);
-  const orderTotal = productsTotal + additionalFeesTotal;
+  const hasUponRequestPricing = itemPricing.some((item) => item.isUponRequest);
+  const productsTotal = hasUponRequestPricing
+    ? null
+    : itemPricing.reduce((sum, item) => sum + (item.total || 0), 0);
+  const orderTotal = (productsTotal ?? 0) + additionalFeesTotal;
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -519,6 +525,12 @@ export default function ManualOrderPanel({ settings, products = [], onBackToStor
                   <span className="font-bold">{(totalWeight / 1000).toFixed(2)} tons</span>
                 </div>
                 <div className="flex justify-between">
+                  <span className="text-gray-400">Products Total</span>
+                  <span className="font-bold">
+                    {hasUponRequestPricing ? 'TBD' : `${productsTotal?.toFixed(2)} QAR`}
+                  </span>
+                </div>
+                <div className="flex justify-between">
                   <span className="text-gray-400">Delivery Fee</span>
                   <span className="font-bold">{deliveryFee} QAR</span>
                 </div>
@@ -535,9 +547,14 @@ export default function ManualOrderPanel({ settings, products = [], onBackToStor
                   </div>
                 )}
                 <div className="border-t border-white/20 pt-4 flex justify-between text-xl">
-                  <span>Order Total</span>
+                  <span>{hasUponRequestPricing ? 'Fees Total' : 'Order Total'}</span>
                   <span className="font-black text-[#7B1F32]">{orderTotal.toFixed(2)} QAR</span>
                 </div>
+                {hasUponRequestPricing && (
+                  <div className="text-sm text-gray-400">
+                    Product pricing is upon request. We will confirm final totals after review.
+                  </div>
+                )}
               </div>
               <Button
                 type="submit"
