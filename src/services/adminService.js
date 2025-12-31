@@ -93,7 +93,7 @@ export const removeProduct = async (productId) => {
 };
 
 export const saveVariant = async (payload) => {
-  const { id, ...rest } = payload;
+  const { id, price_upon_request, ...rest } = payload;
 
   if (id) {
     const { data, error } = await supabase
