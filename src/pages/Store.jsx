@@ -141,70 +141,72 @@ export default function Store() {
       </section>
 
       {/* Filters */}
-      <section className="sticky top-20 z-30 bg-white border-b shadow-sm py-4">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col lg:flex-row gap-4 items-center">
-            {/* Search */}
-            <div className="relative flex-1 w-full">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-              <Input
-                placeholder="Search products..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-12 h-12 text-base rounded-xl border-gray-200"
-              />
-            </div>
+      {!manualOpen && (
+        <section className="sticky top-20 z-30 bg-white border-b shadow-sm py-4">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex flex-col lg:flex-row gap-4 items-center">
+              {/* Search */}
+              <div className="relative flex-1 w-full">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <Input
+                  placeholder="Search products..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-12 h-12 text-base rounded-xl border-gray-200"
+                />
+              </div>
 
-            {/* Category Filter */}
-            <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-              <SelectTrigger className="w-full lg:w-48 h-12 rounded-xl">
-                <SelectValue placeholder="Category" />
-              </SelectTrigger>
-              <SelectContent>
-                {categories.map((cat) => (
-                  <SelectItem key={cat.value} value={cat.value}>
-                    {cat.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+              {/* Category Filter */}
+              <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                <SelectTrigger className="w-full lg:w-48 h-12 rounded-xl">
+                  <SelectValue placeholder="Category" />
+                </SelectTrigger>
+                <SelectContent>
+                  {categories.map((cat) => (
+                    <SelectItem key={cat.value} value={cat.value}>
+                      {cat.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
 
-            {/* Diameter Filter */}
-            <Select value={selectedDiameter} onValueChange={setSelectedDiameter}>
-              <SelectTrigger className="w-full lg:w-48 h-12 rounded-xl">
-                <SelectValue placeholder="Diameter" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Sizes</SelectItem>
-                {diameters.map((dia) => (
-                  <SelectItem key={dia} value={dia.toString()}>
-                    {dia}mm
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+              {/* Diameter Filter */}
+              <Select value={selectedDiameter} onValueChange={setSelectedDiameter}>
+                <SelectTrigger className="w-full lg:w-48 h-12 rounded-xl">
+                  <SelectValue placeholder="Diameter" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Sizes</SelectItem>
+                  {diameters.map((dia) => (
+                    <SelectItem key={dia} value={dia.toString()}>
+                      {dia}mm
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
 
-            {/* Clear Filters */}
-            {(selectedCategory !== 'all' || selectedDiameter !== 'all' || searchQuery) && (
+              {/* Clear Filters */}
+              {(selectedCategory !== 'all' || selectedDiameter !== 'all' || searchQuery) && (
+                <Button
+                  variant="outline"
+                  onClick={clearFilters}
+                  className="flex items-center gap-2"
+                >
+                  <X className="w-4 h-4" />
+                  Clear
+                </Button>
+              )}
+
               <Button
-                variant="outline"
-                onClick={clearFilters}
-                className="flex items-center gap-2"
+                onClick={openManualOrder}
+                className="bg-[#7B1F32] hover:bg-[#5a1625] text-white rounded-xl"
               >
-                <X className="w-4 h-4" />
-                Clear
+                Order Manually
               </Button>
-            )}
-
-            <Button
-              onClick={openManualOrder}
-              className="bg-[#7B1F32] hover:bg-[#5a1625] text-white rounded-xl"
-            >
-              Order Manually
-            </Button>
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* Products Grid */}
       <section className="py-12">
