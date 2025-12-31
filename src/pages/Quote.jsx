@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { base44 } from '@/api/base44Client';
 import { useMutation } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
@@ -27,6 +26,7 @@ import {
   X
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { createQuoteRequest } from '@/services/quoteRequestsService';
 
 const serviceTypes = [
   { value: 'cut_bend', label: 'Cut & Bend Rebar' },
@@ -59,27 +59,19 @@ export default function Quote() {
 
   const submitMutation = useMutation({
     mutationFn: async (data) => {
-      // Upload files first
-      let fileUrls = [];
-      if (files.length > 0) {
-        setIsUploading(true);
-        for (const file of files) {
-          const result = await base44.integrations.Core.UploadFile({ file });
-          fileUrls.push(result.file_url);
-        }
+      setIsUploading(true);
+      try {
+        return await createQuoteRequest({ formData: data, files });
+      } finally {
         setIsUploading(false);
       }
-
-      // Create quote request
-      return base44.entities.QuoteRequest.create({
-        ...data,
-        file_urls: fileUrls,
-        request_number: `QR-${Date.now()}`,
-      });
     },
-    onSuccess: () => {
+    onSuccess: ({ uploadErrors }) => {
       setSubmitted(true);
       toast.success('Quote request submitted successfully!');
+      if (uploadErrors?.length) {
+        toast.warning('Your request was saved, but some files failed to upload.');
+      }
     },
     onError: (error) => {
       toast.error('Failed to submit request. Please try again.');

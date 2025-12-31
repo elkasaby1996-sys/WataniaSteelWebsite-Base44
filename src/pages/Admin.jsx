@@ -30,6 +30,7 @@ import {
 } from '@/services/adminService';
 import { fetchSettings, upsertSetting } from '@/services/settingsService';
 import { fetchOrders, fetchOrderDetails, getOrderFileUrl, updateOrderStatus } from '@/services/ordersService';
+import { fetchQuoteRequests, getQuoteRequestFileUrl } from '@/services/quoteRequestsService';
 
 const categories = ['rebar', 'mesh', 'services', 'accessories', 'cut_bend'];
 const unitTypes = ['ton', 'piece', 'bundle', 'sheet'];
@@ -51,6 +52,7 @@ export default function Admin() {
   const [activeTab, setActiveTab] = useState('products');
   const [products, setProducts] = useState([]);
   const [orders, setOrders] = useState([]);
+  const [quoteRequests, setQuoteRequests] = useState([]);
   const [settings, setSettings] = useState({});
   const [productForm, setProductForm] = useState({
     id: null,
@@ -77,12 +79,20 @@ export default function Admin() {
   const [orderFileUrls, setOrderFileUrls] = useState({});
   const [orderFileErrors, setOrderFileErrors] = useState({});
   const [loadingOrderFiles, setLoadingOrderFiles] = useState(false);
+  const [selectedQuoteId, setSelectedQuoteId] = useState('');
+  const [quoteFileUrls, setQuoteFileUrls] = useState({});
+  const [quoteFileErrors, setQuoteFileErrors] = useState({});
+  const [loadingQuoteFiles, setLoadingQuoteFiles] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [saving, setSaving] = useState(false);
 
   const selectedProduct = useMemo(
     () => products.find((product) => product.id === selectedProductId),
     [products, selectedProductId]
+  );
+  const selectedQuote = useMemo(
+    () => quoteRequests.find((quote) => quote.id === selectedQuoteId),
+    [quoteRequests, selectedQuoteId]
   );
 
   useEffect(() => {
@@ -106,14 +116,16 @@ export default function Admin() {
   const loadAdminData = async () => {
     setSaving(true);
     try {
-      const [productData, settingsData, ordersData] = await Promise.all([
+      const [productData, settingsData, ordersData, quoteData] = await Promise.all([
         fetchAdminProducts(),
         fetchSettings(),
         fetchOrders(),
+        fetchQuoteRequests(),
       ]);
       setProducts(productData);
       setSettings(settingsData);
       setOrders(ordersData);
+      setQuoteRequests(quoteData);
     } catch (error) {
       toast.error(error.message);
     } finally {
@@ -170,6 +182,47 @@ export default function Admin() {
 
     loadOrderFiles();
   }, [orderDetails]);
+
+  useEffect(() => {
+    const loadQuoteFiles = async () => {
+      if (!selectedQuote?.quote_request_files?.length) {
+        setQuoteFileUrls({});
+        setQuoteFileErrors({});
+        return;
+      }
+      setLoadingQuoteFiles(true);
+      try {
+        const entries = await Promise.all(
+          selectedQuote.quote_request_files.map(async (file) => {
+            try {
+              const url = await getQuoteRequestFileUrl(file.file_path);
+              return { id: file.id, url, error: null };
+            } catch (error) {
+              return { id: file.id, url: null, error: error.message };
+            }
+          })
+        );
+        setQuoteFileUrls(
+          entries.reduce((acc, entry) => {
+            acc[entry.id] = entry.url;
+            return acc;
+          }, {})
+        );
+        setQuoteFileErrors(
+          entries.reduce((acc, entry) => {
+            acc[entry.id] = entry.error;
+            return acc;
+          }, {})
+        );
+      } catch (error) {
+        toast.error(error.message);
+      } finally {
+        setLoadingQuoteFiles(false);
+      }
+    };
+
+    loadQuoteFiles();
+  }, [selectedQuote]);
 
   const handleLogin = async (event) => {
     event.preventDefault();
@@ -497,12 +550,13 @@ export default function Admin() {
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <section className="bg-white border-b">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <TabsList className="grid grid-cols-5 w-full max-w-3xl pt-6">
+            <TabsList className="grid grid-cols-6 w-full max-w-4xl pt-6">
               <TabsTrigger value="products">Products</TabsTrigger>
               <TabsTrigger value="variants">Variants</TabsTrigger>
               <TabsTrigger value="images">Images</TabsTrigger>
               <TabsTrigger value="settings">Settings</TabsTrigger>
               <TabsTrigger value="orders">Orders</TabsTrigger>
+              <TabsTrigger value="quotes">Quote Requests</TabsTrigger>
             </TabsList>
           </div>
         </section>
@@ -1013,6 +1067,117 @@ export default function Admin() {
                                   ) : (
                                     <Button type="button" variant="outline" disabled>
                                       {loadingOrderFiles ? 'Loading...' : 'Unavailable'}
+                                    </Button>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="quotes">
+              <div className="bg-white rounded-2xl shadow-lg p-8 space-y-6">
+                <h2 className="text-xl font-bold text-gray-900">Quote Requests</h2>
+                <div className="grid md:grid-cols-2 gap-6">
+                  <div className="space-y-3 max-h-[520px] overflow-auto">
+                    {quoteRequests.length === 0 && (
+                      <div className="text-sm text-gray-500">No quote requests submitted yet.</div>
+                    )}
+                    {quoteRequests.map((quote) => (
+                      <button
+                        key={quote.id}
+                        type="button"
+                        onClick={() => setSelectedQuoteId(quote.id)}
+                        className={`w-full text-left border rounded-xl p-4 transition ${
+                          selectedQuoteId === quote.id ? 'border-[#7B1F32] bg-[#7B1F32]/5' : 'border-gray-200'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <div className="font-semibold text-gray-900">{quote.request_number || 'Quote Request'}</div>
+                            <div className="text-sm text-gray-500">
+                              {quote.company_name || quote.customer_name || 'Unknown customer'}
+                            </div>
+                          </div>
+                          <Badge variant="outline">{quote.urgency || 'standard'}</Badge>
+                        </div>
+                        <div className="text-xs text-gray-400 mt-2">
+                          {quote.created_at ? new Date(quote.created_at).toLocaleString() : '—'}
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                  <div className="border rounded-2xl p-6">
+                    {!selectedQuote ? (
+                      <div className="text-gray-500">Select a quote request to view details.</div>
+                    ) : (
+                      <div className="space-y-4">
+                        <div className="flex items-start justify-between gap-4">
+                          <div>
+                            <div className="font-semibold text-gray-900">
+                              {selectedQuote.request_number || 'Quote Request'}
+                            </div>
+                            <div className="text-sm text-gray-500">
+                              {selectedQuote.company_name || selectedQuote.customer_name || 'Unknown customer'}
+                            </div>
+                            <div className="text-xs text-gray-400 mt-1">
+                              {selectedQuote.created_at ? new Date(selectedQuote.created_at).toLocaleString() : '—'}
+                            </div>
+                          </div>
+                          <Badge variant="outline">{selectedQuote.urgency || 'standard'}</Badge>
+                        </div>
+                        <div className="grid md:grid-cols-2 gap-4 text-sm text-gray-600">
+                          <div className="space-y-1">
+                            <div className="font-semibold text-gray-900">Customer</div>
+                            <div>Name: {selectedQuote.customer_name || '—'}</div>
+                            <div>Company: {selectedQuote.company_name || '—'}</div>
+                            <div>Email: {selectedQuote.customer_email || '—'}</div>
+                            <div>Phone: {selectedQuote.customer_phone || '—'}</div>
+                          </div>
+                          <div className="space-y-1">
+                            <div className="font-semibold text-gray-900">Project</div>
+                            <div>Project Name: {selectedQuote.project_name || '—'}</div>
+                            <div>Service Type: {selectedQuote.service_type || '—'}</div>
+                            <div>Quantity: {selectedQuote.quantity_estimate || '—'}</div>
+                          </div>
+                          <div className="space-y-1">
+                            <div className="font-semibold text-gray-900">Details</div>
+                            <div>Urgency: {selectedQuote.urgency || '—'}</div>
+                            <div>Description: {selectedQuote.description || '—'}</div>
+                          </div>
+                        </div>
+                        {(selectedQuote.quote_request_files || []).length > 0 && (
+                          <div className="space-y-2">
+                            <div className="font-semibold text-gray-900">Files</div>
+                            <div className="space-y-2 text-sm text-gray-600">
+                              {selectedQuote.quote_request_files.map((file) => (
+                                <div key={file.id} className="flex items-center justify-between gap-3 border rounded-lg p-3">
+                                  <div>
+                                    <div className="font-medium text-gray-900">{file.file_name}</div>
+                                    <div className="text-xs text-gray-500">{file.mime_type || 'File'}</div>
+                                    {quoteFileErrors[file.id] && (
+                                      <div className="text-xs text-amber-600 mt-1">
+                                        {quoteFileErrors[file.id]}
+                                      </div>
+                                    )}
+                                  </div>
+                                  {quoteFileUrls[file.id] ? (
+                                    <Button
+                                      type="button"
+                                      variant="outline"
+                                      onClick={() => window.open(quoteFileUrls[file.id], '_blank', 'noopener')}
+                                    >
+                                      View/Download
+                                    </Button>
+                                  ) : (
+                                    <Button type="button" variant="outline" disabled>
+                                      {loadingQuoteFiles ? 'Loading...' : 'Unavailable'}
                                     </Button>
                                   )}
                                 </div>
