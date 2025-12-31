@@ -296,7 +296,9 @@ export default function Store() {
 
                       {/* Price */}
                       <div className="mb-4">
-                        {product.price_qr && (
+                        {product.price_qr === null || product.price_qr === undefined ? (
+                          <div className="text-lg font-semibold text-gray-500">Upon Request</div>
+                        ) : (
                           <div className="text-2xl font-black text-[#7B1F32]">
                             {product.price_qr.toLocaleString()} QAR
                             {product.unit_type && (

@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from '@/components/ui/textarea';
+import { Switch } from '@/components/ui/switch';
 import {
   Select,
   SelectContent,
@@ -65,6 +66,7 @@ export default function Admin() {
     diameter_mm: '',
     unit_type: 'ton',
     price_qr: '',
+    price_upon_request: false,
     stock_qty: '',
     grade: 'B500B',
     active: true,
@@ -242,7 +244,11 @@ export default function Admin() {
       const payload = {
         ...variantForm,
         diameter_mm: variantForm.diameter_mm ? Number(variantForm.diameter_mm) : null,
-        price_qr: Number(variantForm.price_qr),
+        price_qr: variantForm.price_upon_request
+          ? null
+          : variantForm.price_qr === '' || variantForm.price_qr === null
+            ? null
+            : Number(variantForm.price_qr),
         stock_qty: variantForm.stock_qty ? Number(variantForm.stock_qty) : null,
       };
       const saved = await saveVariant(payload);
@@ -269,6 +275,7 @@ export default function Admin() {
         diameter_mm: '',
         unit_type: 'ton',
         price_qr: '',
+        price_upon_request: false,
         stock_qty: '',
         grade: 'B500B',
         active: true,
@@ -286,7 +293,8 @@ export default function Admin() {
       product_id: variant.product_id,
       diameter_mm: variant.diameter_mm || '',
       unit_type: variant.unit_type,
-      price_qr: variant.price_qr || '',
+      price_qr: variant.price_qr ?? '',
+      price_upon_request: variant.price_qr === null,
       stock_qty: variant.stock_qty ?? '',
       grade: variant.grade || 'B500B',
       active: variant.active,
@@ -642,7 +650,24 @@ export default function Admin() {
                           type="number"
                           value={variantForm.price_qr}
                           onChange={(event) => setVariantForm({ ...variantForm, price_qr: event.target.value })}
+                          disabled={variantForm.price_upon_request}
                         />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Upon Request</Label>
+                        <div className="flex items-center gap-3">
+                          <Switch
+                            checked={variantForm.price_upon_request}
+                            onCheckedChange={(checked) =>
+                              setVariantForm({
+                                ...variantForm,
+                                price_upon_request: checked,
+                                price_qr: checked ? '' : variantForm.price_qr,
+                              })
+                            }
+                          />
+                          <span className="text-sm text-gray-500">Hide price in store</span>
+                        </div>
                       </div>
                       <div className="space-y-2">
                         <Label>Stock Qty</Label>
@@ -660,7 +685,10 @@ export default function Admin() {
                         onChange={(event) => setVariantForm({ ...variantForm, grade: event.target.value })}
                       />
                     </div>
-                    <Button onClick={handleSaveVariant} disabled={saving || !variantForm.price_qr}>
+                    <Button
+                      onClick={handleSaveVariant}
+                      disabled={saving || (!variantForm.price_upon_request && !variantForm.price_qr)}
+                    >
                       {saving ? 'Saving...' : 'Save Variant'}
                     </Button>
                   </div>
@@ -675,7 +703,9 @@ export default function Admin() {
                                 {variant.diameter_mm ? `${variant.diameter_mm}mm` : 'Custom'}
                               </div>
                               <div className="text-sm text-gray-500">
-                                {variant.price_qr} QAR/{variant.unit_type}
+                                {variant.price_qr === null
+                                  ? 'Upon Request'
+                                  : `${variant.price_qr} QAR/${variant.unit_type}`}
                               </div>
                             </div>
                             <div className="flex gap-2">
