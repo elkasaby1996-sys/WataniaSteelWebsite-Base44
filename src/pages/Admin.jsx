@@ -243,14 +243,14 @@ export default function Admin() {
     try {
       const { price_upon_request, ...variantPayload } = variantForm;
       const payload = {
-        ...variantPayload,
-        diameter_mm: variantPayload.diameter_mm ? Number(variantPayload.diameter_mm) : null,
-        price_qr: price_upon_request
+        ...variantForm,
+        diameter_mm: variantForm.diameter_mm ? Number(variantForm.diameter_mm) : null,
+        price_qr: variantForm.price_upon_request
           ? null
-          : variantPayload.price_qr === '' || variantPayload.price_qr === null
+          : variantForm.price_qr === '' || variantForm.price_qr === null
             ? null
-            : Number(variantPayload.price_qr),
-        stock_qty: variantPayload.stock_qty ? Number(variantPayload.stock_qty) : null,
+            : Number(variantForm.price_qr),
+        stock_qty: variantForm.stock_qty ? Number(variantForm.stock_qty) : null,
       };
       const saved = await saveVariant(payload);
       toast.success('Variant saved');
