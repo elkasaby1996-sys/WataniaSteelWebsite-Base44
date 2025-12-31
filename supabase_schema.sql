@@ -95,6 +95,31 @@ create table if not exists order_files (
   created_at timestamptz default now()
 );
 
+create table if not exists quote_requests (
+  id uuid primary key default gen_random_uuid(),
+  request_number text unique not null,
+  customer_name text not null,
+  customer_email text,
+  customer_phone text,
+  company_name text,
+  project_name text,
+  service_type text,
+  description text,
+  quantity_estimate text,
+  urgency text check (urgency in ('standard','urgent','express')) default 'standard',
+  status text check (status in ('new','in_review','quoted','closed')) default 'new',
+  created_at timestamptz default now()
+);
+
+create table if not exists quote_request_files (
+  id uuid primary key default gen_random_uuid(),
+  quote_request_id uuid references quote_requests(id) on delete cascade,
+  file_path text not null,
+  file_name text not null,
+  mime_type text,
+  created_at timestamptz default now()
+);
+
 create table if not exists stock_movements (
   id uuid primary key default gen_random_uuid(),
   variant_id uuid references product_variants(id),
@@ -113,6 +138,8 @@ alter table settings enable row level security;
 alter table orders enable row level security;
 alter table order_items enable row level security;
 alter table order_files enable row level security;
+alter table quote_requests enable row level security;
+alter table quote_request_files enable row level security;
 alter table stock_movements enable row level security;
 
 create policy "Public read active products"
@@ -147,6 +174,16 @@ with check (true);
 
 create policy "Public create order files"
 on order_files
+for insert
+with check (true);
+
+create policy "Public create quote requests"
+on quote_requests
+for insert
+with check (true);
+
+create policy "Public create quote request files"
+on quote_request_files
 for insert
 with check (true);
 
@@ -234,6 +271,34 @@ using (exists (
   where profiles.id = auth.uid() and profiles.role = 'admin'
 ));
 
+create policy "Admin read quote requests"
+on quote_requests
+for select
+using (exists (
+  select 1 from profiles
+  where profiles.id = auth.uid() and profiles.role = 'admin'
+));
+
+create policy "Admin update quote requests"
+on quote_requests
+for update
+using (exists (
+  select 1 from profiles
+  where profiles.id = auth.uid() and profiles.role = 'admin'
+))
+with check (exists (
+  select 1 from profiles
+  where profiles.id = auth.uid() and profiles.role = 'admin'
+));
+
+create policy "Admin read quote request files"
+on quote_request_files
+for select
+using (exists (
+  select 1 from profiles
+  where profiles.id = auth.uid() and profiles.role = 'admin'
+));
+
 create policy "Admin manage stock movements"
 on stock_movements
 for all
@@ -267,6 +332,22 @@ on storage.objects
 for delete
 using (
   bucket_id = 'product-images'
+  and exists (
+    select 1 from profiles
+    where profiles.id = auth.uid() and profiles.role = 'admin'
+  )
+);
+
+create policy "Public upload quote request files"
+on storage.objects
+for insert
+with check (bucket_id = 'quote-request-files');
+
+create policy "Admin read quote request files"
+on storage.objects
+for select
+using (
+  bucket_id = 'quote-request-files'
   and exists (
     select 1 from profiles
     where profiles.id = auth.uid() and profiles.role = 'admin'
