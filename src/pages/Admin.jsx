@@ -241,6 +241,7 @@ export default function Admin() {
     }
     setSaving(true);
     try {
+      const { price_upon_request, ...variantPayload } = variantForm;
       const payload = {
         ...variantForm,
         diameter_mm: variantForm.diameter_mm ? Number(variantForm.diameter_mm) : null,
