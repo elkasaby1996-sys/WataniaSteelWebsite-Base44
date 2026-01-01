@@ -31,6 +31,7 @@ import {
 import { fetchSettings, upsertSetting } from '@/services/settingsService';
 import { fetchOrders, fetchOrderDetails, getOrderFileUrl, updateOrderStatus } from '@/services/ordersService';
 import { fetchQuoteRequests, getQuoteRequestFileUrl } from '@/services/quoteRequestsService';
+import { fetchContactRequests } from '@/services/contactRequestsService';
 
 const categories = ['rebar', 'mesh', 'services', 'accessories', 'cut_bend'];
 const unitTypes = ['ton', 'piece', 'bundle', 'sheet'];
@@ -53,6 +54,7 @@ export default function Admin() {
   const [products, setProducts] = useState([]);
   const [orders, setOrders] = useState([]);
   const [quoteRequests, setQuoteRequests] = useState([]);
+  const [contactRequests, setContactRequests] = useState([]);
   const [settings, setSettings] = useState({});
   const [productForm, setProductForm] = useState({
     id: null,
@@ -80,6 +82,7 @@ export default function Admin() {
   const [orderFileErrors, setOrderFileErrors] = useState({});
   const [loadingOrderFiles, setLoadingOrderFiles] = useState(false);
   const [selectedQuoteId, setSelectedQuoteId] = useState('');
+  const [selectedContactId, setSelectedContactId] = useState('');
   const [quoteFileUrls, setQuoteFileUrls] = useState({});
   const [quoteFileErrors, setQuoteFileErrors] = useState({});
   const [loadingQuoteFiles, setLoadingQuoteFiles] = useState(false);
@@ -93,6 +96,10 @@ export default function Admin() {
   const selectedQuote = useMemo(
     () => quoteRequests.find((quote) => quote.id === selectedQuoteId),
     [quoteRequests, selectedQuoteId]
+  );
+  const selectedContact = useMemo(
+    () => contactRequests.find((request) => request.id === selectedContactId),
+    [contactRequests, selectedContactId]
   );
 
   useEffect(() => {
@@ -116,16 +123,18 @@ export default function Admin() {
   const loadAdminData = async () => {
     setSaving(true);
     try {
-      const [productData, settingsData, ordersData, quoteData] = await Promise.all([
+      const [productData, settingsData, ordersData, quoteData, contactData] = await Promise.all([
         fetchAdminProducts(),
         fetchSettings(),
         fetchOrders(),
         fetchQuoteRequests(),
+        fetchContactRequests(),
       ]);
       setProducts(productData);
       setSettings(settingsData);
       setOrders(ordersData);
       setQuoteRequests(quoteData);
+      setContactRequests(contactData);
     } catch (error) {
       toast.error(error.message);
     } finally {
@@ -550,13 +559,14 @@ export default function Admin() {
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <section className="bg-white border-b">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <TabsList className="grid grid-cols-6 w-full max-w-4xl pt-6">
+            <TabsList className="grid grid-cols-7 w-full max-w-5xl pt-6">
               <TabsTrigger value="products">Products</TabsTrigger>
               <TabsTrigger value="variants">Variants</TabsTrigger>
               <TabsTrigger value="images">Images</TabsTrigger>
               <TabsTrigger value="settings">Settings</TabsTrigger>
               <TabsTrigger value="orders">Orders</TabsTrigger>
               <TabsTrigger value="quotes">Quote Requests</TabsTrigger>
+              <TabsTrigger value="contacts">Contact Requests</TabsTrigger>
             </TabsList>
           </div>
         </section>
@@ -1185,6 +1195,88 @@ export default function Admin() {
                             </div>
                           </div>
                         )}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="contacts">
+              <div className="bg-white rounded-2xl shadow-lg p-8 space-y-6">
+                <h2 className="text-xl font-bold text-gray-900">Contact Requests</h2>
+                <div className="grid md:grid-cols-2 gap-6">
+                  <div className="space-y-3 max-h-[520px] overflow-auto">
+                    {contactRequests.length === 0 && (
+                      <div className="text-sm text-gray-500">No contact requests submitted yet.</div>
+                    )}
+                    {contactRequests.map((request) => (
+                      <button
+                        key={request.id}
+                        type="button"
+                        onClick={() => setSelectedContactId(request.id)}
+                        className={`w-full text-left border rounded-xl p-4 transition ${
+                          selectedContactId === request.id ? 'border-[#7B1F32] bg-[#7B1F32]/5' : 'border-gray-200'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <div className="font-semibold text-gray-900">
+                              {request.contact_name || 'Contact Request'}
+                            </div>
+                            <div className="text-sm text-gray-500">
+                              {request.company_name || request.contact_email || request.contact_phone || '—'}
+                            </div>
+                          </div>
+                          <Badge variant="outline">{request.status || 'new'}</Badge>
+                        </div>
+                        <div className="text-xs text-gray-400 mt-2">
+                          {request.created_at ? new Date(request.created_at).toLocaleString() : '—'}
+                        </div>
+                        {request.subject && (
+                          <div className="text-xs text-gray-500 mt-2">
+                            Subject: {request.subject}
+                          </div>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                  <div className="border rounded-2xl p-6">
+                    {!selectedContact ? (
+                      <div className="text-gray-500">Select a contact request to view details.</div>
+                    ) : (
+                      <div className="space-y-4">
+                        <div className="flex items-start justify-between gap-4">
+                          <div>
+                            <div className="font-semibold text-gray-900">
+                              {selectedContact.contact_name || 'Contact Request'}
+                            </div>
+                            <div className="text-sm text-gray-500">
+                              {selectedContact.company_name || selectedContact.contact_email || '—'}
+                            </div>
+                            <div className="text-xs text-gray-400 mt-1">
+                              {selectedContact.created_at ? new Date(selectedContact.created_at).toLocaleString() : '—'}
+                            </div>
+                          </div>
+                          <Badge variant="outline">{selectedContact.status || 'new'}</Badge>
+                        </div>
+                        <div className="grid md:grid-cols-2 gap-4 text-sm text-gray-600">
+                          <div className="space-y-1">
+                            <div className="font-semibold text-gray-900">Contact</div>
+                            <div>Name: {selectedContact.contact_name || '—'}</div>
+                            <div>Company: {selectedContact.company_name || '—'}</div>
+                            <div>Email: {selectedContact.contact_email || '—'}</div>
+                            <div>Phone: {selectedContact.contact_phone || '—'}</div>
+                          </div>
+                          <div className="space-y-1">
+                            <div className="font-semibold text-gray-900">Subject</div>
+                            <div>{selectedContact.subject || '—'}</div>
+                          </div>
+                        </div>
+                        <div className="space-y-1 text-sm text-gray-600">
+                          <div className="font-semibold text-gray-900">Message</div>
+                          <div className="whitespace-pre-wrap">{selectedContact.message || '—'}</div>
+                        </div>
                       </div>
                     )}
                   </div>

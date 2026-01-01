@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-import { base44 } from '@/api/base44Client';
 import { useMutation } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
+import { createContactRequest } from '@/services/contactRequestsService';
 import {
   Phone,
   Mail,
@@ -31,11 +31,14 @@ export default function Contact() {
   const [submitted, setSubmitted] = useState(false);
 
   const submitMutation = useMutation({
-    mutationFn: (data) => base44.entities.Inquiry.create(data),
+    mutationFn: (data) => createContactRequest(data),
     onSuccess: () => {
       setSubmitted(true);
       toast.success('Message sent successfully!');
-    }
+    },
+    onError: (error) => {
+      toast.error(error.message);
+    },
   });
 
   const handleSubmit = (e) => {

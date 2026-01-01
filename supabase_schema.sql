@@ -120,6 +120,18 @@ create table if not exists quote_request_files (
   created_at timestamptz default now()
 );
 
+create table if not exists contact_requests (
+  id uuid primary key default gen_random_uuid(),
+  contact_name text not null,
+  contact_email text,
+  contact_phone text,
+  company_name text,
+  subject text,
+  message text not null,
+  status text check (status in ('new','in_progress','resolved')) default 'new',
+  created_at timestamptz default now()
+);
+
 create table if not exists stock_movements (
   id uuid primary key default gen_random_uuid(),
   variant_id uuid references product_variants(id),
@@ -140,6 +152,7 @@ alter table order_items enable row level security;
 alter table order_files enable row level security;
 alter table quote_requests enable row level security;
 alter table quote_request_files enable row level security;
+alter table contact_requests enable row level security;
 alter table stock_movements enable row level security;
 
 create policy "Public read active products"
@@ -184,6 +197,11 @@ with check (true);
 
 create policy "Public create quote request files"
 on quote_request_files
+for insert
+with check (true);
+
+create policy "Public create contact requests"
+on contact_requests
 for insert
 with check (true);
 
@@ -293,6 +311,14 @@ with check (exists (
 
 create policy "Admin read quote request files"
 on quote_request_files
+for select
+using (exists (
+  select 1 from profiles
+  where profiles.id = auth.uid() and profiles.role = 'admin'
+));
+
+create policy "Admin read contact requests"
+on contact_requests
 for select
 using (exists (
   select 1 from profiles
