@@ -3,7 +3,9 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
-import { serviceImages } from '@/assets/services/serviceImages';
+import straightBarImage from '@/assets/services/watania-steel-section-straight-bar-photo.svg';
+import wireMeshImage from '@/assets/services/wiremesh.svg';
+import shapeCodesImage from '@/assets/services/shapecodes.svg';
 import { 
   Scissors, 
   Truck, 
@@ -48,7 +50,7 @@ const services = [
       'All standard diameters in stock',
       'B500B certified steel grade'
     ],
-    image: serviceImages.straightBarPhoto,
+    image: straightBarImage,
     cta: 'Order Now',
     ctaLink: 'Store'
   },
@@ -65,7 +67,7 @@ const services = [
       'Fast production turnaround',
       'Delivery included'
     ],
-    image: serviceImages.wireMeshPhoto,
+    image: wireMeshImage,
     cta: 'Get Quote',
     ctaLink: 'Quote'
   },
@@ -82,7 +84,7 @@ const services = [
       'Reinforcement cages',
       'Custom BBS processing'
     ],
-    image: serviceImages.shapeCodesPhoto,
+    image: shapeCodesImage,
     cta: 'Contact Us',
     ctaLink: 'Contact'
   }
