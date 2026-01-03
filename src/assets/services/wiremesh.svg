@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="800" viewBox="0 0 1200 800" role="img" aria-labelledby="title desc">
+  <title id="title">WireMesh</title>
+  <desc id="desc">Placeholder image for welded mesh service.</desc>
+  <rect width="1200" height="800" fill="#2c2f36" />
+  <g stroke="#9fa6ad" stroke-width="12" opacity="0.6">
+    <path d="M0 100 H1200" />
+    <path d="M0 200 H1200" />
+    <path d="M0 300 H1200" />
+    <path d="M0 400 H1200" />
+    <path d="M0 500 H1200" />
+    <path d="M0 600 H1200" />
+    <path d="M0 700 H1200" />
+    <path d="M100 0 V800" />
+    <path d="M200 0 V800" />
+    <path d="M300 0 V800" />
+    <path d="M400 0 V800" />
+    <path d="M500 0 V800" />
+    <path d="M600 0 V800" />
+    <path d="M700 0 V800" />
+    <path d="M800 0 V800" />
+    <path d="M900 0 V800" />
+    <path d="M1000 0 V800" />
+    <path d="M1100 0 V800" />
+  </g>
+  <text x="600" y="740" fill="#ffffff" font-family="Arial, Helvetica, sans-serif" font-size="40" text-anchor="middle">
+    WireMesh
+  </text>
+</svg>
