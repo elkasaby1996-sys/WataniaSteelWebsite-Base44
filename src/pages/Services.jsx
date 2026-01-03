@@ -48,7 +48,7 @@ const services = [
       'All standard diameters in stock',
       'B500B certified steel grade'
     ],
-    image: serviceImages.straightBarPhoto,
+    image: 'https://watania-ss.com/wp-content/uploads/2024/01/Strong-and-Handling-3-scaled.jpg',
     cta: 'Order Now',
     ctaLink: 'Store'
   },
@@ -65,7 +65,7 @@ const services = [
       'Fast production turnaround',
       'Delivery included'
     ],
-    image: serviceImages.wireMeshPhoto,
+    image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTtZLO9T-w_EpG6-LBlRaJn_zIaxoYJ5hTOVA&s',
     cta: 'Get Quote',
     ctaLink: 'Quote'
   },
@@ -82,7 +82,7 @@ const services = [
       'Reinforcement cages',
       'Custom BBS processing'
     ],
-    image: serviceImages.shapeCodesPhoto,
+    image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSM9BP72XraPdgrUtkgJ9wg_SXJuc9aP58u9w&s',
     cta: 'Contact Us',
     ctaLink: 'Contact'
   }
