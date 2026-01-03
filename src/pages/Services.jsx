@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
+import { serviceImages } from '@/assets/services/serviceImages';
 import { 
   Scissors, 
   Truck, 
@@ -47,7 +48,7 @@ const services = [
       'All standard diameters in stock',
       'B500B certified steel grade'
     ],
-    image: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=80',
+    image: serviceImages.straightBarPhoto,
     cta: 'Order Now',
     ctaLink: 'Store'
   },
@@ -64,7 +65,7 @@ const services = [
       'Fast production turnaround',
       'Delivery included'
     ],
-    image: 'https://images.unsplash.com/photo-1513467535987-fd81bc7d62f8?w=800&q=80',
+    image: serviceImages.wireMeshPhoto,
     cta: 'Get Quote',
     ctaLink: 'Quote'
   },
@@ -81,7 +82,7 @@ const services = [
       'Reinforcement cages',
       'Custom BBS processing'
     ],
-    image: 'https://images.unsplash.com/photo-1565608087341-404b25492fee?w=800&q=80',
+    image: serviceImages.shapeCodesPhoto,
     cta: 'Contact Us',
     ctaLink: 'Contact'
   }
