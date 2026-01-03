@@ -4,6 +4,7 @@ import { createPageUrl } from '@/utils';
 import { motion } from 'framer-motion';
 import { ArrowRight, Scissors, Truck, Grid3X3, Wrench, Upload } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { serviceImages } from '@/assets/services/serviceImages';
 
 const services = [
   {
@@ -18,7 +19,7 @@ const services = [
     icon: Truck,
     title: 'Straight Bar Supply',
     description: 'Express delivery within 1-2 hours across Qatar. Multiple trailer options with crane unloading available.',
-    image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQwpmRpm8RSTXmzxXW9ZGsMngaWrZ8yBeuFHQ&s',
+    image: serviceImages.straightBarPhoto,
     link: 'Store',
     color: '#1E3A5F'
   },
@@ -26,7 +27,7 @@ const services = [
     icon: Grid3X3,
     title: 'Welded Mesh',
     description: 'Standard and custom mesh fabrication. Fast production with precision welding for all reinforcement needs.',
-    image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR43c9rI8oKqxi98x-jrR2Qtj0763NVOo0VjQ&s',
+    image: serviceImages.wireMeshPhoto,
     link: 'Services',
     color: '#7B1F32'
   },
@@ -34,7 +35,7 @@ const services = [
     icon: Wrench,
     title: 'Custom Fabrication',
     description: 'Stirrups, hooks, L-bars, U-bars, reinforcement cages. Any custom shape from your specifications.',
-    image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSKAN0VAjikVTgH-senqw8sonF95-xBCFG17w&s',
+    image: serviceImages.shapeCodesPhoto,
     link: 'Services',
     color: '#1E3A5F'
   },
